@@ -568,6 +568,7 @@ class BaseSession(SessionInterface):
 
     # Run request and get response.
     movers = self._update_with_movers(feed_dict_string, feed_map)
+
     try:
       results = self._do_run(handle, target_list, unique_fetches,
                              feed_dict_string, options, run_metadata)
