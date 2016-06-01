@@ -1,2 +1,17 @@
 Design of immediate cache.
 
+In order to make execution efficient, we should minimize the number of graph modifications by reusing previously created OpDef nodes.
+
+There are several places that trigger creation of new OpDef nodes.
+
+1. Direct creation in our wrapped apply_op_def. In that case we can observe the opdef that will be created based on the arguments to the function, and lookup previously created op.
+
+2. env.numpy_to_handle -- that operation uploads tensor to TensorFlow runtime by creating get_session_handle and placeholder ops, and feeding numpy array there.
+
+3. env.handle_to_numpy -- there we create get_session_tensor node and feed it
+our tensorhandle to get original tensor back.
+
+4. session_ops have handle_deleter and handle_mover graphs that are created and reused between calls.
+
+
+
