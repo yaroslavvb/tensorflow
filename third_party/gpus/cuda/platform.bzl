@@ -1,6 +1,6 @@
-CUDA_VERSION = ""
-CUDNN_VERSION = ""
-PLATFORM = ""
+CUDA_VERSION = "7.5"
+CUDNN_VERSION = "5"
+PLATFORM = "Linux"
 
 def cuda_sdk_version():
   return CUDA_VERSION
