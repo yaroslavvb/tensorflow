@@ -64,6 +64,7 @@ class Env(object):
 
     self.CACHE_ENABLED = True
     self.PRINT_CACHE_MISSES = False
+    self.PRINT_CACHE_HITS = False
 
     # Override user-setting for soft_placement
     # TODO(yaroslavvb): remove after #2587 is fixed
@@ -139,6 +140,8 @@ class Env(object):
   def cache_lookup(self, key):
     """Retrieve Op object from the cache."""
     if self.CACHE_ENABLED:
+      if self.PRINT_CACHE_HITS:
+        print("Immediate cache hit for %s" %(str(key)))
       return self.op_cache.get(key, None)
 
   def cache_add(self, key, op):
@@ -164,7 +167,7 @@ class Env(object):
     handle_device = util.shorten_device_string(handle_device)
     handle_device_sanitized = handle_device.replace(":", "")
 
-    key = ("handle2numpy", tf_dtype.name, handle_device, current_device)
+    key = ("handle_to_numpy", tf_dtype.name, handle_device, current_device)
 
     if key in self.op_cache:
       holder, tensor = self.op_cache[key]
@@ -172,7 +175,7 @@ class Env(object):
       if self.PRINT_CACHE_MISSES:
         print("Immediate cache miss for %s"%(str(key)))
 
-      op_prefix = "handle2numpy.%s.%s.%s" % (tf_dtype.name,
+      op_prefix = "handle_to_numpy.%s.%s.%s" % (tf_dtype.name,
                                              handle_device_sanitized,
                                              current_device_sanitized)
       with self.g.as_default():
@@ -195,15 +198,15 @@ class Env(object):
     tf_dtype = dtypes.as_dtype(array.dtype)
     current_device = util.get_current_device_string(self.g)
     current_device_sanitized = current_device.replace(":", "")
-    key = ("numpy2handle", tf_dtype.name, current_device)
+    key = ("numpy_to_handle", tf_dtype.name, current_device)
 
     if key in self.op_cache:
       holder, handle_op = self.op_cache[key]
     else:
       if self.PRINT_CACHE_MISSES:
-        print("Cache miss for %s"%(str(key)))
+        print("Immediate cache miss for %s"%(str(key)))
 
-      op_prefix = "numpy2handle.%s.%s" % (tf_dtype.name,
+      op_prefix = "numpy_to_handle.%s.%s" % (tf_dtype.name,
                                           current_device_sanitized)
       with self.g.as_default():
         holder = array_ops.placeholder(dtype=array.dtype,
