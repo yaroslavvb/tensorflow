@@ -7,6 +7,41 @@ from tensorflow.contrib.immediate.python.immediate import test_util
 
 class EnvTest(tf.test.TestCase):
 
+
+  def testHandleAddGpu(self):
+    dt = tf.float32
+    sess = tf.Session()
+
+    with tf.device("gpu:0"):
+      val_op = tf.ones((), dtype=dt)
+      handle_op = tf.get_session_handle(val_op)
+
+      py_handle = sess.run(handle_op)
+      tf_handle = py_handle.handle
+      holder1, tensor1 = tf.get_session_tensor(dt)
+      holder2, tensor2 = tf.get_session_tensor(dt)
+      add_op = tf.add(tensor1, tensor2)
+      result_handle_op = tf.get_session_handle(add_op)
+      for i in range(10):
+        tf_result_handle = sess.run(result_handle_op,
+                                    feed_dict={holder1: tf_handle,
+                                               holder2: tf_handle})
+        print(tf_result_handle.eval())
+
+      
+  def disabled_testPlaceholderOnGpuIssueAllCpu(self):
+    config = tf.ConfigProto(log_device_placement=True)
+    with self.test_session(config=config) as sess:
+      dtype=tf.float32
+      with tf.device("/cpu:0"):
+        a = tf.constant(1, dtype)
+
+        a_handle = sess.run(tf.get_session_handle(a))
+        b_holder, b_tensor = tf.get_session_tensor(dtype)
+        print(sess.run(b_tensor, feed_dict={b_holder:
+                                              a_handle.handle}))
+
+  
   # TODO(yaroslavvb): re-enable once fix to below is merged
   # https://github.com/tensorflow/tensorflow/issues/2645
   def disabled_testHandleDeletion(self):
@@ -78,20 +113,6 @@ class EnvTest(tf.test.TestCase):
     testHandleForType(tf.int64)
     testHandleForType(tf.float64)
 
-
-  def testPlaceholderOnGpuIssueAllCpu(self):
-    config = tf.ConfigProto(log_device_placement=True)
-    with self.test_session(config=config) as sess:
-      dtype=tf.float32
-      with tf.device("/cpu:0"):
-        a = tf.constant(1, dtype)
-
-        a_handle = sess.run(tf.get_session_handle(a))
-        b_holder, b_tensor = tf.get_session_tensor(dtype)
-        print(sess.run(b_tensor, feed_dict={b_holder:
-                                              a_handle.handle}))
-
-  
 
 if __name__ == "__main__":
   tf.test.main()
