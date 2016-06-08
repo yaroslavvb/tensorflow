@@ -8,6 +8,9 @@ from tensorflow.python.framework import ops as ops
 
 import threading
 
+# TODO(yaroslavvb): make these tests compatible with non-GPU machines
+# by testing if GPU is available
+
 def print_gdef_diff(gdef1, gdef2):
   print("GraphDef difference")
   print("-"*80)
