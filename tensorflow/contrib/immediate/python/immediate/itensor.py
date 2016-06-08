@@ -79,7 +79,7 @@ class ITensor(object):
     pass
 
   def __repr__(self):
-    return "iTensor(%s, dtype=%s)" % (self.as_numpy(), self.dtype)
+    return "ITensor(%s, dtype=%s)" % (self.as_numpy(), self.dtype.name)
 
   # Methods to emulate Python numeric type
   # https://docs.python.org/2/reference/datamodel.html#emulating-numeric-types
