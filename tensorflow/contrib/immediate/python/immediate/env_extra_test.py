@@ -32,7 +32,21 @@ def _is_graph_changed(env):
 
 class ExtraEnvTest(test_util.ImmediateTestCase):
 
-  def testOnes(self):
+  def testAdd(self):
+    types = [np.int32, np.int64, np.float32, np.float64]
+    with self.test_env(tf) as env:
+      val0 = np.ones(())
+      vals = [env.numpy_to_itensor(val0, dtype=dt) for dt in types]
+      np_vals = [val0.astype(dt) for dt in types]
+      for val, np_val in zip(vals, np_vals):
+        for d in ["cpu:0", "gpu:0"]:
+          placed_val = env.tf.identity(val)
+          for i in range(5):
+            result = placed_val+placed_val
+          if result!=2*np_val:
+            print("Failed for %s, %s"%(d, result))
+
+  def atestOnes(self):
     try:
       with self.test_env(tf) as env:
         val1 = env.tf.ones(shape=(3, 3))
@@ -46,5 +60,6 @@ class ExtraEnvTest(test_util.ImmediateTestCase):
 
 
     
+  
 if __name__ == "__main__":
   tf.test.main()
