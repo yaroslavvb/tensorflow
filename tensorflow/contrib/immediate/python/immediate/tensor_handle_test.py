@@ -26,7 +26,10 @@ class EnvTest(tf.test.TestCase):
         tf_result_handle = sess.run(result_handle_op,
                                     feed_dict={holder1: tf_handle,
                                                holder2: tf_handle})
-        print(tf_result_handle.eval())
+        np_result = tf_result_handle.eval()
+        if np_result < 1.9:
+          print(np_result)
+      self.assertEqual(np_result, 2)
 
       
   def disabled_testPlaceholderOnGpuIssueAllCpu(self):
