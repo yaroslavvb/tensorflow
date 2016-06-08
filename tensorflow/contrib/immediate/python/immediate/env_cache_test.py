@@ -3,7 +3,6 @@ import numpy as np
 import tensorflow.contrib.immediate as immediate
 
 from tensorflow.contrib.immediate.python.immediate import test_util
-from tensorflow.python.client import device_lib
 
 from tensorflow.python.framework import ops as ops
 
@@ -214,10 +213,6 @@ class ExtraEnvTest(test_util.ImmediateTestCase):
       self.assertTrue(is_graph_changed(env))
       np_val5 = env.itensor_to_numpy(gpu_val2)
       self.assertFalse(is_graph_changed(env))
-
-  def _assertHaveGpu0(self):
-    device_names = [d.name for d in device_lib.list_local_devices()]
-    self.assertTrue("/gpu:0" in device_names)
     
 if __name__ == "__main__":
   tf.test.main()

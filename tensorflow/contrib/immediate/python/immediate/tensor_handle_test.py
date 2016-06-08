@@ -15,6 +15,10 @@ class EnvTest(tf.test.TestCase):
     dt = tf.float32
     sess = tf.Session()
 
+    if not tf.test.is_built_with_cuda():
+      return True
+    self._assertHaveGpu0()
+    
     with tf.device("gpu:0"):
       val_op = tf.ones((), dtype=dt)
       handle_op = tf.get_session_handle(val_op)
@@ -51,6 +55,10 @@ class EnvTest(tf.test.TestCase):
   # TODO(yaroslavvb): re-enable once fix to below is merged
   # https://github.com/tensorflow/tensorflow/issues/2645
   def disabled_testHandleDeletion(self):
+    if not tf.test.is_built_with_cuda():
+      return True
+    self._assertHaveGpu0()
+
     dtype = tf.float32
     # soft-placement to work around #2587
     config = tf.ConfigProto(log_device_placement=True,
@@ -81,6 +89,10 @@ class EnvTest(tf.test.TestCase):
   #  https://github.com/tensorflow/tensorflow/issues/2587
   def disabled_testPlaceholderOnGpuIssueAllGpu(self):
     # https://github.com/tensorflow/tensorflow/issues/2587
+    if not tf.test.is_built_with_cuda():
+      return True
+    self._assertHaveGpu0()
+
     config = tf.ConfigProto(log_device_placement=True)
     with self.test_session(config=config) as sess:
       dtype=tf.float32
@@ -95,6 +107,10 @@ class EnvTest(tf.test.TestCase):
   # TODO(yaroslavvb): reenable when fix for below is merged
   # https://github.com/tensorflow/tensorflow/issues/2586
   def disabled_testHandle(self):
+    if not tf.test.is_built_with_cuda():
+      return True
+    self._assertHaveGpu0()
+
     def testHandleForType(tf_dtype):
       for use_gpu in [True, False]:
         with self.test_session(use_gpu=use_gpu) as sess:

@@ -4,10 +4,11 @@ from __future__ import division
 from __future__ import print_function
 
 import contextlib
-
 from tensorflow.core.protobuf import config_pb2
 
 from tensorflow.python.framework import test_util as tf_test_util
+from tensorflow.python.client import device_lib
+
 import tensorflow.contrib.immediate as immediate
 
 class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
@@ -22,6 +23,10 @@ class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
 
   def tearDown(self):
     pass
+
+  def _assertHaveGpu0(self):
+    device_names = [d.name for d in device_lib.list_local_devices()]
+    self.assertTrue("/gpu:0" in device_names)
 
   @contextlib.contextmanager
   def test_env(self, tf=None):
