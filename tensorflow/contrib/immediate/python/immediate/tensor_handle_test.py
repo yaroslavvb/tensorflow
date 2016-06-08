@@ -5,6 +5,9 @@ import numpy as np
 import tensorflow.contrib.immediate as immediate
 from tensorflow.contrib.immediate.python.immediate import test_util
 
+# TODO(yaroslavvb): make these tests compatible with non-GPU machines
+# by testing if GPU is available
+
 class EnvTest(tf.test.TestCase):
 
 
@@ -32,7 +35,7 @@ class EnvTest(tf.test.TestCase):
       self.assertEqual(np_result, 2)
 
       
-  def disabled_testPlaceholderOnGpuIssueAllCpu(self):
+  def testPlaceholderOnGpuIssueAllCpu(self):
     config = tf.ConfigProto(log_device_placement=True)
     with self.test_session(config=config) as sess:
       dtype=tf.float32
