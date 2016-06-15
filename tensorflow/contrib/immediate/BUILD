@@ -117,7 +117,7 @@ py_test(
            ":immediate_test_lib",
            "//tensorflow/python:extra_py_tests_deps",
            "//tensorflow/python:framework_test_lib",
-           "//tensorflow/python:kernel_tests/gradient_checker",
+#           "//tensorflow/python:kernel_tests/gradient_checker",
            "//tensorflow/python:platform_test",
            "//tensorflow:tensorflow_py",
     ],
@@ -133,7 +133,7 @@ py_test(
            ":immediate_test_lib",
            "//tensorflow/python:extra_py_tests_deps",
            "//tensorflow/python:framework_test_lib",
-           "//tensorflow/python:kernel_tests/gradient_checker",
+#           "//tensorflow/python:kernel_tests/gradient_checker",
            "//tensorflow/python:platform_test",
            "//tensorflow:tensorflow_py",
     ],
@@ -183,7 +183,7 @@ py_test(
            "//tensorflow/python:framework_test_lib",
            "//tensorflow/python:platform_test",
            "//tensorflow/python:extra_py_tests_deps",
-           "//tensorflow/python:kernel_tests/gradient_checker",
+#           "//tensorflow/python:kernel_tests/gradient_checker",
     ],
     tags = ["manual"]  # fails on Jenkins but passes locally
 )
@@ -201,7 +201,7 @@ py_test(
            "//tensorflow/python:framework_test_lib",
            "//tensorflow/python:platform_test",
            "//tensorflow/python:extra_py_tests_deps",
-           "//tensorflow/python:kernel_tests/gradient_checker",
+#           "//tensorflow/python:kernel_tests/gradient_checker",
     ],
 )
 
