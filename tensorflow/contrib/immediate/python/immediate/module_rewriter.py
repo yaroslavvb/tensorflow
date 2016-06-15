@@ -16,7 +16,7 @@ import types
 from . import op as op_lib
 from . import util
 
-from tensorflow.python.ops import op_def_library
+from tensorflow.python.framework import op_def_library
 
 class ModuleRewriter(object):
   """Object that controls rewriting of module. It allows to create a new
@@ -245,7 +245,7 @@ class ImmediateRewriter(object):
         return op_lib.ConvertToTensorWrapper(self.env, symbol)
 
       if (symbol.__name__ == 'constant' and
-          symbol.__module__ == 'tensorflow.python.ops.constant_op'):
+          symbol.__module__ == 'tensorflow.python.framework.constant_op'):
         return op_lib.ConstantOpWrapper(self.env, symbol)
 
       if (symbol.__name__ == 'constant_value' and

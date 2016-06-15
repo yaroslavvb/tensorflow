@@ -251,7 +251,7 @@ class Env(object):
       tf_dtype = dtypes.as_dtype(array.dtype)
 
       if not tf_dtype or array.dtype == np.dtype("O"):
-        raise ValueError("Unsupported type %s")
+        raise ValueError("Unsupported type %s" %(type(array)))
 
     # Follow downcasting convention as in python/framework/tensor_util.py#L357
     # python/numpy default float type is float64. We prefer float32 instead.

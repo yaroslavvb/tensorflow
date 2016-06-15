@@ -32,6 +32,24 @@ def f(i):
 
 class ModuleRewriterTest(test_util.TensorFlowTestCase):
 
+  # constant and convert_to_tensor are overridden to return itensors
+  def testConstant(self):
+    env = immediate.Env(tf)
+    result = env.tf.constant(1)
+    self.assertEqual(type(result).__name__, "ITensor")
+
+  def testConvertToTensor(self):
+    env = immediate.Env(tf)
+    result = env.tf.convert_to_tensor([1, 2, 3])
+    self.assertEqual(type(result).__name__, "ITensor")
+
+  # constantValue is overridden to accept itensors instead of tensors
+  def testConstantValue(self):
+    env = immediate.Env(tf)
+    myval = env.numpy_to_itensor(1)
+    result = env.tf.python.framework.tensor_util.constant_value(myval)
+    self.assertEqual(result, 1)
+
   def testOpDefLibRewriter(self):
     """Try running functions to catch Python symbol linking errors."""
 

@@ -110,7 +110,7 @@ class OpDefLibraryWrapper(object):
     # names of input arguments, ie "x", "y" for Add op
     input_names = [arg.name for arg in op_def.input_arg]
 
-    # convert any python inputs into ITensors
+    # convert any python inputs in keywords into ITensors
     convert_to_itensors_with_type_inference(op_def, keywords,
                                             self.env.numpy_to_itensor)
 
