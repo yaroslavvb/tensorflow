@@ -892,12 +892,12 @@ class NormalizeMomentsTest(test_util.TensorFlowTestCase):
 #   #     self.RunMomentTestWithDynamicShape(
 #   #         shape=[2, 3, 5, 4], axes=[0, 1, 2], keep_dims=keep_dims)
 
-  def testAxes(self):
-    for keep_dims in [False, True]:
-      self.RunMomentTest(
-          shape=[2, 3, 5, 4], axes=[1, 2, 3], keep_dims=keep_dims)
-  #     self.RunMomentTestWithDynamicShape(
+  # def testAxes(self):
+  #   for keep_dims in [False, True]:
+  #     self.RunMomentTest(
   #         shape=[2, 3, 5, 4], axes=[1, 2, 3], keep_dims=keep_dims)
+  # #     self.RunMomentTestWithDynamicShape(
+  # #         shape=[2, 3, 5, 4], axes=[1, 2, 3], keep_dims=keep_dims)
 
   # def _testGlobalGradient(self, from_y="mean"):
   #   with self.test_session():
