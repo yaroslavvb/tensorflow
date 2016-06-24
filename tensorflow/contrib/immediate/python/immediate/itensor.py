@@ -131,6 +131,23 @@ class ITensor(object):
       other = self.env.numpy_to_itensor(other, dtype=self.dtype)
     return self.env.tf.mul(other, self)
 
+  def __div__(self, other):
+    if not isinstance(other, ITensor):
+      other = self.env.numpy_to_itensor(other, dtype=self.dtype)
+    return self.env.tf.div(self, other)
+
+  def __rdiv__(self, other):
+    if not isinstance(other, ITensor):
+      other = self.env.numpy_to_itensor(other, dtype=self.dtype)
+    return self.env.tf.div(other, self)
+
+  # TODO(yaroslavvb): make div and truediv do different things?
+  def __truediv__(self, other):
+    return self.__div__(other)
+
+  def __rtruediv__(self, other):
+    return self.__rdiv__(other)
+
   def __bool__(self):
     return bool(self.as_numpy())
 

@@ -33,6 +33,14 @@ class EnvTest(test_util.ImmediateTestCase):
       testForDtype(np.int32)
       testForDtype(np.int64)
 
+  def testTensorToItensor(self):
+    with self.test_env(tf) as env:
+      with env.g.as_default():
+        x0 = [[1, 2, 3], [4, 5, 6]]
+        tensor = tf.constant(x0)
+        itensor = env.tensor_to_itensor(tensor)
+        self.assertAllEqual(itensor.as_numpy(), x0)
+      
   def testNumpySingleton(self):
     def testForDtype(dtype):
       a = np.array(1, dtype=dtype)
@@ -76,6 +84,13 @@ class EnvTest(test_util.ImmediateTestCase):
       tensor3 = env.tf.sub(tensor1, tensor2)
       tensor4 = env.tf.sub(tensor3, tensor2)
       self.assertAllEqual(tensor4.as_numpy(), -1*val)
+
+  def testDiv(self):
+    with self.test_env(tf) as env:
+      val = np.ones(())
+      tensor1 = 2*env.numpy_to_itensor(val)
+      self.assertEqual(4/tensor1, 2)
+      self.assertEqual(tensor1/4, 0.5)
 
   def testPowOp(self):
     """Try a simple non-native op."""
@@ -156,6 +171,10 @@ class EnvTest(test_util.ImmediateTestCase):
       self.assertEqual(val0[1], 2)
       self.assertEqual(val0[2], 3)
 
+  def testSum1(self):
+    with self.test_env(tf) as env:
+      val0 = env.numpy_to_itensor([1, 2, 3])
+      self.assertEqual(env.sum1(val0), 6)
 
 if __name__ == "__main__":
   tf.test.main()

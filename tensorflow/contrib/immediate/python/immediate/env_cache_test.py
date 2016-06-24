@@ -11,18 +11,63 @@ import tensorflow as tf
 
 class EnvCacheTest(test_util.ImmediateTestCase):
 
-  def testAddCacheCpu(self):
+  def testSum1CacheCpu(self):
     env = immediate.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
     with env.g.device("cpu:0"):
-      val1 = env.numpy_to_itensor(1)
-      val2 = env.numpy_to_itensor(2)
+      val1 = env.numpy_to_itensor([1, 2, 3])
+      val2 = env.numpy_to_itensor([4, 5, 6])
+      val3 = env.numpy_to_itensor([4, 5, 6], dtype=tf.float64)
+      try:
+        out1 = env.sum1(val1)
+      except:
+        import pdb;
+        pdb.post_mortem()
       self.assertTrue(is_graph_changed(env))
+      out2 = env.sum1(val2)
+      self.assertFalse(is_graph_changed(env))
+      out3 = env.sum1(val3)
+      self.assertTrue(is_graph_changed(env))
+      
+  def testSum1CacheGpu(self):
+    if not tf.test.is_built_with_cuda():
+      return True
+    self._assertHaveGpu0()
+
+    env = immediate.Env(tf)
+    with env.g.device("cpu:0"):
+      val1 = env.numpy_to_itensor([1, 2, 3])
+      val2 = env.numpy_to_itensor([4, 5, 6])
+      val3 = env.numpy_to_itensor([4, 5, 6], dtype=tf.float64)
+      try:
+        out1 = env.sum1(val1)
+      except:
+        import pdb;
+        pdb.post_mortem()
+      self.assertTrue(is_graph_changed(env))
+      out2 = env.sum1(val2)
+      self.assertFalse(is_graph_changed(env))
+      out3 = env.sum1(val3)
+      self.assertTrue(is_graph_changed(env))
+      
+  def testAddCacheCpu(self):
+    env = immediate.Env(tf)
+    env.disable_gc()
+    val1 = env.numpy_to_itensor(1)
+    val2 = env.numpy_to_itensor(2)
+    is_graph_changed(env)
+    with env.g.device("gpu:0"):
       val3 = val1 + val2
       self.assertTrue(is_graph_changed(env))
-      _unused_val4 = val2 + val3
+      val4 = val2 + val3
       self.assertFalse(is_graph_changed(env))
+    with env.g.device("cpu:0"):
+      val4 = val1 + val2
+      self.assertTrue(is_graph_changed(env))
+      _val5 = val2 + val3
+      self.assertFalse(is_graph_changed(env))
+    
 
   def testAddCacheGpu(self):
     if not tf.test.is_built_with_cuda():

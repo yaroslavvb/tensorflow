@@ -12,6 +12,7 @@ import numbers
 import numpy as np
 
 from . import itensor as itensor_lib
+from . import op as op_lib
 from . import module_rewriter as module_rewriter_lib
 from . import util as util
 
@@ -21,6 +22,8 @@ from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops as ops_lib
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import session_ops
+from tensorflow.python.framework import constant_op
+from tensorflow.python.ops import gen_math_ops
 
 __all__ = ["Env"]
 
@@ -85,14 +88,21 @@ class Env(object):
     else: # tf_namespace is like "tf"
       self.original_tf = tf_namespace
       self.tf = rewriter(tf_namespace)
-      
+
+    # fields used when recording tracing runs  
+    self._tracing_enabled = False
+    self._tracing_options = self.tf.RunOptions(trace_level=
+                                               self.tf.RunOptions.FULL_TRACE)
+    self._run_metadata = self.tf.RunMetadata()
+    
     _global_default_env = self
 
 
   def disable_gc(self):
     """Turn off garbage collection for persistent Tensors."""
     # it's saved in abstract base class of Session
-    self.session.__class__.__base__._DEAD_HANDLES_THRESHOLD = 2**62
+    self.session.__class__.__base__._DEAD_HANDLES_THRESHOLD = 10**20
+
 
 
   def enable_gc(self):
@@ -100,6 +110,11 @@ class Env(object):
     self.session.__class__.__base__._DEAD_HANDLES_THRESHOLD = self._gc_default
 
 
+  def enable_tracing(self):
+    self._tracing_enabled = True
+
+  def disable_tracing(self):
+    self._tracing_enabled = False
 
   @staticmethod
   def get_global_default_env():
@@ -223,6 +238,9 @@ class Env(object):
     return handle
 
 
+  def handle_to_itensor(self, handle):
+    return itensor_lib.ITensor(self, handle)
+  
   def itensor_to_numpy(self, itensor):
     """Convert itensor to numpy array."""
 
@@ -275,7 +293,16 @@ class Env(object):
     handle = self.numpy_to_handle(array)
     return itensor_lib.ITensor(self, handle)
 
+  def tensor_to_itensor(self, tensor):
 
+    op_prefix = "tensor_to_itensor"
+    with self.g.as_default():
+      handle_op = session_ops.get_session_handle(tensor,
+                                                 name=op_prefix+".handle")
+    handle = self.run(handle_op)
+    return itensor_lib.ITensor(self, handle)
+
+  
   def constant(self, values, dtype=None, shape=None, name="Const"):
     """Immediate specific implementation of constant-op."""
 
@@ -294,12 +321,59 @@ class Env(object):
     # a scalar and non-empty shape. For feature parity with TensorFlow we
     # handle this case by tiling the constant explicitly.
     if isinstance(values, numbers.Number) and shape:
-      return self.numpy_to_itensor(values*np.ones(shape=shape, dtype=np_dtype),
+      data_array = values*np.ones(shape=shape, dtype=np_dtype)
+      return self.numpy_to_itensor(data_array,
                                    dtype=dtype, shape=shape)
 
     return self.numpy_to_itensor(values, dtype, shape)
 
+  # faster version for summing over flat tensors (5x faster than using
+  # native with unknown size)
+  # TODO(yaroslavvb): respect is_cache_enabled
+  def sum1(self, input_itensor):
+    """Create a specialized op that sums over 1 dimensional vector.
+    This avoids having to create Rank/Range ops that initialize indices
+    in the default tf.reduce_sum."""
+    
+    op_type_name = "sum1"
+    tf_dtype = input_itensor.dtype
+    current_device = util.get_current_device_string(self.g)
+    current_device_sanitized = current_device.replace(":", "")
+    key = (op_type_name, tf_dtype.name, current_device)
+
+    if key in self.op_cache:
+      if self.PRINT_CACHE_HITS:
+        print("Immediate cache hit for %s"%(str(key)))
+      op = self.op_cache[key]
+    else:
+      if self.PRINT_CACHE_MISSES:
+        print("Immediate cache miss for %s"%(str(key)))
+      with self.g.as_default():
+        op_prefix = op_type_name + "." + tf_dtype.name
+        holder, tensor = session_ops.get_session_tensor(
+          input_itensor.tf_handle, input_itensor.dtype, name=op_prefix+".0")
+        input_holders = {"input": holder}
+        reduction_indices = constant_op.constant([0], dtype=dtypes.int32,
+                                                 name=op_prefix+".1")
+        output = gen_math_ops._sum(input=tensor,
+                                   reduction_indices=reduction_indices,
+                                   keep_dims=False, name=op_prefix+".op")
+        op_prefix = op_prefix+".out"
+        output_handle = session_ops.get_session_handle(output,
+                                                       op_prefix+".handle")
+        
+      op = op_lib.Op(self, input_holders, output_handle)
+      self.cache_add(key, op)
+
+    return op(input=input_itensor)
+    
   
+  # TODO(yaroslavvb): rename into _run because it's implementation internal
   def run(self, *args, **kwargs):
     """Execute session.run in the current Env."""
-    return self.sess.run(*args, **kwargs)
+    if self._tracing_enabled:
+      kwargs["options"] = self._tracing_options
+      kwargs["run_metadata"] = self._run_metadata
+      return self.sess.run(*args, **kwargs)
+    else:
+      return self.sess.run(*args, **kwargs)
