@@ -781,116 +781,116 @@ class SufficientStatisticsTest(test_util.TensorFlowTestCase):
   #         self._testSuffStats([1, 2, 3], [0, 2], shift, keep_dims, has_shape)
 
 
-  # NOTE(yaroslavvb): comment out because tests use g.colocate_with()
-# class NormalizeMomentsTest(test_util.TensorFlowTestCase):
+class NormalizeMomentsTest(test_util.TensorFlowTestCase):
 
-#   def _npNormalizeMoments(self, counts, mean_ss, variance_ss, shift):
-#     mean = mean_ss / counts
-#     variance = variance_ss / counts - mean * mean
-#     if shift is not None:
-#       mean += shift
-#     return mean, variance
+  def _npNormalizeMoments(self, counts, mean_ss, variance_ss, shift):
+    mean = mean_ss / counts
+    variance = variance_ss / counts - mean * mean
+    if shift is not None:
+      mean += shift
+    return mean, variance
 
-#   def _opNormalizeMoments(self, counts, mean_ss, variance_ss, shift):
-#     return tf.nn.normalize_moments(counts, mean_ss, variance_ss, shift)
+  def _opNormalizeMoments(self, counts, mean_ss, variance_ss, shift):
+    return tf.nn.normalize_moments(counts, mean_ss, variance_ss, shift)
 
-#   def _testNormalizeMoments(self, shape, shift):
-#     counts = np.ones([1]).astype(np.float32)
-#     mean_ss = np.random.random_sample(shape).astype(np.float32)
-#     variance_ss = np.random.random_sample(shape).astype(np.float32)
-#     variance_ss *= variance_ss
-#     if shift:
-#       shift_v = np.random.random_sample(shape).astype(np.float32)
-#     else:
-#       shift_v = None
-#     npm, npv = self._npNormalizeMoments(counts, mean_ss, variance_ss, shift_v)
-#     for use_gpu in [True, False]:
-#       with self.test_session(use_gpu=use_gpu) as sess:
-#         tf_counts = tf.constant(counts, name="counts")
-#         tf_mean_ss = tf.constant(mean_ss, name="mean_ss")
-#         tf_variance_ss = tf.constant(variance_ss, name="variance_ss")
-#         if shift:
-#           tf_shift_v = tf.constant(shift_v, name="shift")
-#         else:
-#           tf_shift_v = None
-#         opm, opv = self._opNormalizeMoments(tf_counts, tf_mean_ss,
-#                                             tf_variance_ss, tf_shift_v)
-#         tfm, tfv = sess.run([opm, opv])
-#         self.assertAllClose(npm, tfm, atol=0.000001)
-#         self.assertAllClose(npv, tfv, atol=0.000001)
+  def _testNormalizeMoments(self, shape, shift):
+    counts = np.ones([1]).astype(np.float32)
+    mean_ss = np.random.random_sample(shape).astype(np.float32)
+    variance_ss = np.random.random_sample(shape).astype(np.float32)
+    variance_ss *= variance_ss
+    if shift:
+      shift_v = np.random.random_sample(shape).astype(np.float32)
+    else:
+      shift_v = None
+    npm, npv = self._npNormalizeMoments(counts, mean_ss, variance_ss, shift_v)
+    for use_gpu in [True, False]:
+      with self.test_session(use_gpu=use_gpu) as sess:
+        tf_counts = tf.constant(counts, name="counts")
+        tf_mean_ss = tf.constant(mean_ss, name="mean_ss")
+        tf_variance_ss = tf.constant(variance_ss, name="variance_ss")
+        if shift:
+          tf_shift_v = tf.constant(shift_v, name="shift")
+        else:
+          tf_shift_v = None
+        opm, opv = self._opNormalizeMoments(tf_counts, tf_mean_ss,
+                                            tf_variance_ss, tf_shift_v)
+        tfm, tfv = sess.run([opm, opv])
+        self.assertAllClose(npm, tfm, atol=0.000001)
+        self.assertAllClose(npv, tfv, atol=0.000001)
 
-#   def testNormalizeMoments(self):
-#     for shift in [True, False]:
-#       self._testNormalizeMoments([3], shift)
-#       self._testNormalizeMoments([2, 3], shift)
+  def testNormalizeMoments(self):
+    for shift in [True, False]:
+      self._testNormalizeMoments([3], shift)
+      self._testNormalizeMoments([2, 3], shift)
 
 
-class MomentsTest(test_util.TensorFlowTestCase):
+# NOTE(yaroslavvb): comment out because tests use g.colocate_with()
+# class MomentsTest(test_util.TensorFlowTestCase):
 
-  # def RunMomentTestWithDynamicShape(self, shape, axes, keep_dims):
-  #   with self.test_session():
-  #     # shape = [batch, width, height, depth]
-  #     assert len(shape) == 4
+#   # def RunMomentTestWithDynamicShape(self, shape, axes, keep_dims):
+#   #   with self.test_session():
+#   #     # shape = [batch, width, height, depth]
+#   #     assert len(shape) == 4
 
-  #     x_numpy = np.random.normal(size=shape).astype(np.float32)
-  #     x = tf.placeholder(tf.float32, shape=[None] * len(shape))
+#   #     x_numpy = np.random.normal(size=shape).astype(np.float32)
+#   #     x = tf.placeholder(tf.float32, shape=[None] * len(shape))
 
-  #     mean, var = tf.nn.moments(x, axes, keep_dims=keep_dims)
+#   #     mean, var = tf.nn.moments(x, axes, keep_dims=keep_dims)
 
-  #     num_elements = np.prod([shape[i] for i in axes])
+#   #     num_elements = np.prod([shape[i] for i in axes])
 
-  #     ax = tuple(axes)
-  #     expected_mean = np.sum(
-  #         x_numpy, axis=ax, keepdims=keep_dims) / num_elements
-  #     expected_mean_squared = np.multiply(expected_mean, expected_mean)
-  #     expected_x_squared = np.sum(
-  #         np.multiply(x_numpy, x_numpy),
-  #         axis=ax,
-  #         keepdims=keep_dims) / num_elements
-  #     expected_variance = expected_x_squared - expected_mean_squared
+#   #     ax = tuple(axes)
+#   #     expected_mean = np.sum(
+#   #         x_numpy, axis=ax, keepdims=keep_dims) / num_elements
+#   #     expected_mean_squared = np.multiply(expected_mean, expected_mean)
+#   #     expected_x_squared = np.sum(
+#   #         np.multiply(x_numpy, x_numpy),
+#   #         axis=ax,
+#   #         keepdims=keep_dims) / num_elements
+#   #     expected_variance = expected_x_squared - expected_mean_squared
 
-  #     # Check that the moments are correct.
-  #     self.assertAllClose(expected_mean, mean.eval(feed_dict={x: x_numpy}))
-  #     self.assertAllClose(expected_variance, var.eval(feed_dict={x: x_numpy}))
+#   #     # Check that the moments are correct.
+#   #     self.assertAllClose(expected_mean, mean.eval(feed_dict={x: x_numpy}))
+#   #     self.assertAllClose(expected_variance, var.eval(feed_dict={x: x_numpy}))
 
-  def RunMomentTest(self, shape, axes, keep_dims):
-    with self.test_session():
-      # shape = [batch, width, height, depth]
-      assert len(shape) == 4
+#   def RunMomentTest(self, shape, axes, keep_dims):
+#     with self.test_session():
+#       # shape = [batch, width, height, depth]
+#       assert len(shape) == 4
 
-      x_numpy = np.random.normal(size=shape).astype(np.float32)
-      x = tf.constant(x_numpy)
+#       x_numpy = np.random.normal(size=shape).astype(np.float32)
+#       x = tf.constant(x_numpy)
 
-      mean, var = tf.nn.moments(x, axes, keep_dims=keep_dims)
+#       mean, var = tf.nn.moments(x, axes, keep_dims=keep_dims)
 
-      num_elements = np.prod([shape[i] for i in axes])
+#       num_elements = np.prod([shape[i] for i in axes])
 
-      ax = tuple(axes)
-      expected_mean = np.sum(
-          x_numpy, axis=ax, keepdims=keep_dims) / num_elements
-      expected_mean_squared = np.multiply(expected_mean, expected_mean)
-      expected_x_squared = np.sum(
-          np.multiply(x_numpy, x_numpy),
-          axis=ax,
-          keepdims=keep_dims) / num_elements
-      expected_variance = expected_x_squared - expected_mean_squared
+#       ax = tuple(axes)
+#       expected_mean = np.sum(
+#           x_numpy, axis=ax, keepdims=keep_dims) / num_elements
+#       expected_mean_squared = np.multiply(expected_mean, expected_mean)
+#       expected_x_squared = np.sum(
+#           np.multiply(x_numpy, x_numpy),
+#           axis=ax,
+#           keepdims=keep_dims) / num_elements
+#       expected_variance = expected_x_squared - expected_mean_squared
 
-      # Check that the moments are correct.
-      self.assertAllClose(expected_mean, mean.eval())
-      self.assertAllClose(expected_variance, var.eval())
+#       # Check that the moments are correct.
+#       self.assertAllClose(expected_mean, mean.eval())
+#       self.assertAllClose(expected_variance, var.eval())
 
-  def testBasic(self):
-    for keep_dims in [False, True]:
-      self.RunMomentTest(shape=[2, 3, 5, 4], axes=[0], keep_dims=keep_dims)
-  #      self.RunMomentTestWithDynamicShape(
-  #          shape=[2, 3, 5, 4], axes=[0], keep_dims=keep_dims)
+#   def testBasic(self):
+#     for keep_dims in [False, True]:
+#       self.RunMomentTest(shape=[2, 3, 5, 4], axes=[0], keep_dims=keep_dims)
+#   #      self.RunMomentTestWithDynamicShape(
+#   #          shape=[2, 3, 5, 4], axes=[0], keep_dims=keep_dims)
 
-  def testGlobalNormalization(self):
-    for keep_dims in [False, True]:
-      self.RunMomentTest(
-          shape=[2, 3, 5, 4], axes=[0, 1, 2], keep_dims=keep_dims)
-  #     self.RunMomentTestWithDynamicShape(
-  #         shape=[2, 3, 5, 4], axes=[0, 1, 2], keep_dims=keep_dims)
+#   def testGlobalNormalization(self):
+#     for keep_dims in [False, True]:
+#       self.RunMomentTest(
+#           shape=[2, 3, 5, 4], axes=[0, 1, 2], keep_dims=keep_dims)
+#   #     self.RunMomentTestWithDynamicShape(
+#   #         shape=[2, 3, 5, 4], axes=[0, 1, 2], keep_dims=keep_dims)
 
   def testAxes(self):
     for keep_dims in [False, True]:
