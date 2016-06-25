@@ -222,6 +222,22 @@ py_test(
     ],
 )
 
+py_test(
+    name = "lbfgs_test",
+    srcs = ["python/immediate/lbfgs_test.py"],
+    size = "medium",
+    srcs_version = "PY2AND3",
+    deps = [
+           ":immediate_py",
+           ":immediate_test_lib",
+           "//tensorflow:tensorflow_py",
+    ],
+
+    data = [
+    	 ":mnist_testdata"
+    ],
+)
+
 filegroup(
     name = "mnist_testdata",
     srcs = [
@@ -230,6 +246,8 @@ filegroup(
 	"python/immediate/testdata/convolutional-0.meta",
 	"python/immediate/testdata/t10k-images-idx3-ubyte.gz",
         "python/immediate/testdata/t10k-labels-idx1-ubyte.gz",
+	"python/immediate/testdata/mnist_data_32x32_small.npy",
+        "python/immediate/testdata/mnist_labels_small.npy",
     ],
 )
 
