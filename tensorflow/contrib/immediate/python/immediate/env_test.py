@@ -40,7 +40,7 @@ class EnvTest(test_util.ImmediateTestCase):
         tensor = tf.constant(x0)
         itensor = env.tensor_to_itensor(tensor)
         self.assertAllEqual(itensor.as_numpy(), x0)
-      
+
   def testNumpySingleton(self):
     def testForDtype(dtype):
       a = np.array(1, dtype=dtype)
@@ -175,6 +175,18 @@ class EnvTest(test_util.ImmediateTestCase):
     with self.test_env(tf) as env:
       val0 = env.numpy_to_itensor([1, 2, 3])
       self.assertEqual(env.sum1(val0), 6)
+
+  # TODO(yaroslavvb): add GPU tests for function
+  def testFunction(self):
+    with self.test_env(tf) as env:
+      one = env.tf.ones(())       # create ITensor
+      x = env.create_input(one) # create Tensor
+      y = env.create_input(one) # create Tensor
+      z1 = tf.add(x, y)         # operate on Tensors
+      z2 = tf.sub(x, y)         # operate on Tensors
+      f = env.create_function(inputs=[x, y], outputs=[z1, z2])
+
+      self.assertAllEqual(f(one, one*2), (3, -1))
 
 if __name__ == "__main__":
   tf.test.main()

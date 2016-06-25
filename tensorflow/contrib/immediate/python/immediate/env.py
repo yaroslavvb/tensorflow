@@ -63,14 +63,6 @@ class Env(object):
     self.PRINT_CACHE_HITS = False
 
     self.op_cache = {}  # cache used for reusing parts of graph
-
-    # Override user-setting for soft_placement
-    # TODO(yaroslavvb): remove after #2587 is fixed
-    if not config:
-      config = config_pb2.ConfigProto()
-    if not config.allow_soft_placement:
-      config.allow_soft_placement = True
-
     self.g = ops_lib.Graph()
     self.sess = session.Session(config=config, graph=self.g)
     self._gc_default = self.session._DEAD_HANDLES_THRESHOLD
@@ -89,12 +81,18 @@ class Env(object):
       self.original_tf = tf_namespace
       self.tf = rewriter(tf_namespace)
 
-    # fields used when recording tracing runs  
+    # fields used when recording tracing runs
     self._tracing_enabled = False
     self._tracing_options = self.tf.RunOptions(trace_level=
                                                self.tf.RunOptions.FULL_TRACE)
     self._run_metadata = self.tf.RunMetadata()
-    
+
+    # used for creating functions
+    self.input_dict = {}
+
+    self.default_session = None
+    self.default_graph = None
+
     _global_default_env = self
 
 
@@ -240,7 +238,7 @@ class Env(object):
 
   def handle_to_itensor(self, handle):
     return itensor_lib.ITensor(self, handle)
-  
+
   def itensor_to_numpy(self, itensor):
     """Convert itensor to numpy array."""
 
@@ -302,7 +300,7 @@ class Env(object):
     handle = self.run(handle_op)
     return itensor_lib.ITensor(self, handle)
 
-  
+
   def constant(self, values, dtype=None, shape=None, name="Const"):
     """Immediate specific implementation of constant-op."""
 
@@ -327,6 +325,67 @@ class Env(object):
 
     return self.numpy_to_itensor(values, dtype, shape)
 
+
+  def create_input(self, x, name=""):
+    """Returns Tensor of the same type/device as x which can be used
+    as input to native TensorFlow ops, and substituted later with an ITensor,
+    using callable created with env.create_function(). The user must ensure
+    that future ITensor is on the same device as x, otherwise you will see
+    memcpy/CUDA sync errors.
+
+    Args:
+      x: ITensor used to initalize input tensor. It used only to determine
+          dtype and device placement.
+
+    Returns:
+      A Tensor that can be used in TensorFlow ops.
+    """
+    op_name = "custom_input_%s"%(name)
+    input_holder, input_ = session_ops.get_session_tensor(x.tf_handle,
+                                                          x.dtype,
+                                                          name=op_name)
+
+    self.input_dict[input_] = input_holder
+    return input_
+
+
+  def create_function(self, inputs, outputs, name=""):
+    """Create callable that accept argument ITensors in the same order as
+    inputs argument, and produces tuple of outputs which are ITensors
+    corresponding to outputs.
+
+    Example usage:
+    x0 = env.tf.ones()       # create ITensor
+    x = env.create_input(x0) # create Tensor
+    y = env.create_input(x0) # create Tensor
+    z1 = tf.add(x, y)         # operate on Tensors
+    z2 = tf.sub(x, y)         # operate on Tensors
+    f = env.create_function(inputs=[x, y], outputs=[z1, z2])
+
+    print(f(x0, x0*5))       # feed ITensors, get result back as ITensors
+    """
+
+    input_holders = []
+    for input_ in inputs:
+      input_holders.append(self.input_dict[input_])
+
+    output_handle_ops = []
+    for tensor in outputs:
+      op_name = "custom_function_%s.handle"%(name,)
+      output_handle_ops.append(session_ops.get_session_handle(tensor, op_name))
+
+    def func(*args):
+      feed_dict = {}
+      for (i, arg) in enumerate(args):
+        feed_dict[input_holders[i]] = arg.tf_handle
+
+      tensor_handles = self.sess.run(output_handle_ops, feed_dict=feed_dict)
+      return [itensor_lib.ITensor(self, t) for t in tensor_handles]
+
+    return func
+
+
+
   # faster version for summing over flat tensors (5x faster than using
   # native with unknown size)
   # TODO(yaroslavvb): respect is_cache_enabled
@@ -334,12 +393,12 @@ class Env(object):
     """Create a specialized op that sums over 1 dimensional vector.
     This avoids having to create Rank/Range ops that initialize indices
     in the default tf.reduce_sum."""
-    
+
     op_type_name = "sum1"
     tf_dtype = input_itensor.dtype
     current_device = util.get_current_device_string(self.g)
     current_device_sanitized = current_device.replace(":", "")
-    key = (op_type_name, tf_dtype.name, current_device)
+    key = (op_type_name, tf_dtype.name, current_device_sanitized)
 
     if key in self.op_cache:
       if self.PRINT_CACHE_HITS:
@@ -351,7 +410,7 @@ class Env(object):
       with self.g.as_default():
         op_prefix = op_type_name + "." + tf_dtype.name
         holder, tensor = session_ops.get_session_tensor(
-          input_itensor.tf_handle, input_itensor.dtype, name=op_prefix+".0")
+            input_itensor.tf_handle, input_itensor.dtype, name=op_prefix+".0")
         input_holders = {"input": holder}
         reduction_indices = constant_op.constant([0], dtype=dtypes.int32,
                                                  name=op_prefix+".1")
@@ -361,13 +420,27 @@ class Env(object):
         op_prefix = op_prefix+".out"
         output_handle = session_ops.get_session_handle(output,
                                                        op_prefix+".handle")
-        
+
       op = op_lib.Op(self, input_holders, output_handle)
       self.cache_add(key, op)
 
     return op(input=input_itensor)
-    
-  
+
+
+  def set_default_graph(self):
+    """Sets default graph to the graph of this immediate environment."""
+    self.default_graph = self.g.as_default()
+    self.default_graph.enforce_nesting = False
+    self.default_graph.__enter__()
+
+
+  def set_default_session(self):
+    """Sets default graph to the graph of this immediate environment."""
+    self.default_session = self.sess.as_default()
+    self.default_session.enforce_nesting = False
+    self.default_session.__enter__()
+
+
   # TODO(yaroslavvb): rename into _run because it's implementation internal
   def run(self, *args, **kwargs):
     """Execute session.run in the current Env."""
