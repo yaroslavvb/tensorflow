@@ -28,7 +28,7 @@ def mnistCost(train_data_flat, train_labels, x0, env):
 
   # create our input end-point, this is where ITensor->Tensor conversion
   # happens
-  param = env.create_input(x0)
+  param = env.make_input(x0)
 
   # reshape flat parameter vector into W and b parameter matrices
   W_flat = tf.slice(param, [0], [10240])
@@ -63,7 +63,7 @@ def mnistCost(train_data_flat, train_labels, x0, env):
   # create immediate wrapper of tensorflow graph we just constructed
   # ITensor input is automatically converged and fed into param
   # and outputs are converted to ITensor objects and returned
-  return env.create_function(inputs=[param], outputs=[loss, grad])
+  return env.make_function(inputs=[param], outputs=[loss, grad])
 
 
 class LbfgsTest(tf.test.TestCase):

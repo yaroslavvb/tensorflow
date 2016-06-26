@@ -335,10 +335,10 @@ class Env(object):
     return self.numpy_to_itensor(values, dtype, shape)
 
 
-  def create_input(self, x, name=""):
+  def make_input(self, x, name=""):
     """Returns Tensor of the same type/device as x which can be used
     as input to native TensorFlow ops, and substituted later with an ITensor,
-    using callable created with env.create_function(). The user must ensure
+    using callable created with env.make_function(). The user must ensure
     that future ITensor is on the same device as x, otherwise you will see
     memcpy/CUDA sync errors.
 
@@ -358,18 +358,18 @@ class Env(object):
     return input_
 
 
-  def create_function(self, inputs, outputs, name=""):
+  def make_function(self, inputs, outputs, name=""):
     """Create callable that accept argument ITensors in the same order as
     inputs argument, and produces tuple of outputs which are ITensors
     corresponding to outputs.
 
     Example usage:
     x0 = env.tf.ones()       # create ITensor
-    x = env.create_input(x0) # create Tensor
-    y = env.create_input(x0) # create Tensor
+    x = env.make_input(x0) # create Tensor
+    y = env.make_input(x0) # create Tensor
     z1 = tf.add(x, y)         # operate on Tensors
     z2 = tf.sub(x, y)         # operate on Tensors
-    f = env.create_function(inputs=[x, y], outputs=[z1, z2])
+    f = env.make_function(inputs=[x, y], outputs=[z1, z2])
 
     print(f(x0, x0*5))       # feed ITensors, get result back as ITensors
     """
@@ -406,7 +406,7 @@ class Env(object):
   # faster version for summing over flat tensors (5x faster than using
   # native with unknown size)
   # TODO(yaroslavvb): respect is_cache_enabled.
-  # TODO(yaroslavvb): deprecate since create_function is more elegant solution?
+  # TODO(yaroslavvb): deprecate since make_function is more elegant solution?
   def sum1(self, input_itensor):
     """Create a specialized op that sums over 1 dimensional vector.
     This avoids having to create Rank/Range ops that initialize indices

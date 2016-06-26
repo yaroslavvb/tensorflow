@@ -180,14 +180,14 @@ class EnvTest(test_util.ImmediateTestCase):
   def testFunction(self):
     with self.test_env(tf) as env:
       one = env.tf.ones(())       # create ITensor
-      x = env.create_input(one) # create Tensor
-      y = env.create_input(one) # create Tensor
+      x = env.make_input(one) # create Tensor
+      y = env.make_input(one) # create Tensor
       z1 = tf.add(x, y)         # operate on Tensors
       z2 = tf.sub(x, y)         # operate on Tensors
-      f = env.create_function(inputs=[x, y], outputs=[z1, z2])
+      f = env.make_function(inputs=[x, y], outputs=[z1, z2])
       self.assertAllEqual(f(one, one*2), (3, -1))
 
-      f2 = env.create_function(inputs=[x, y], outputs=z1)
+      f2 = env.make_function(inputs=[x, y], outputs=z1)
       self.assertAllEqual(f2(one, one*2), 3)
       
 
