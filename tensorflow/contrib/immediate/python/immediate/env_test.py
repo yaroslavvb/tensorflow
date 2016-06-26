@@ -185,8 +185,11 @@ class EnvTest(test_util.ImmediateTestCase):
       z1 = tf.add(x, y)         # operate on Tensors
       z2 = tf.sub(x, y)         # operate on Tensors
       f = env.create_function(inputs=[x, y], outputs=[z1, z2])
-
       self.assertAllEqual(f(one, one*2), (3, -1))
+
+      f2 = env.create_function(inputs=[x, y], outputs=z1)
+      self.assertAllEqual(f2(one, one*2), 3)
+      
 
 if __name__ == "__main__":
   tf.test.main()

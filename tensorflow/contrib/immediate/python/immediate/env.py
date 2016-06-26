@@ -379,9 +379,15 @@ class Env(object):
       input_holders.append(self.input_dict[input_])
 
     output_handle_ops = []
-    for tensor in outputs:
-      op_name = "custom_function_%s.handle"%(name,)
-      output_handle_ops.append(session_ops.get_session_handle(tensor, op_name))
+    if util.is_list_or_tuple(outputs):
+      for (i,tensor) in enumerate(outputs):
+        op_name = "custom_function_%s.output.%s"%(name, i)
+        output_handle_ops.append(session_ops.get_session_handle(tensor,
+                                                                op_name))
+    # special-case single output
+    else:
+      op_name = "custom_function_%s.output"%(name)
+      output_handle_ops = session_ops.get_session_handle(outputs, op_name)
 
     def func(*args):
       feed_dict = {}
@@ -389,15 +395,18 @@ class Env(object):
         feed_dict[input_holders[i]] = arg.tf_handle
 
       tensor_handles = self.sess.run(output_handle_ops, feed_dict=feed_dict)
-      return [itensor_lib.ITensor(self, t) for t in tensor_handles]
-
+      if util.is_list_or_tuple(tensor_handles):
+        return [itensor_lib.ITensor(self, t) for t in tensor_handles]
+      else:
+        return itensor_lib.ITensor(self, tensor_handles)
+      
     return func
-
 
 
   # faster version for summing over flat tensors (5x faster than using
   # native with unknown size)
-  # TODO(yaroslavvb): respect is_cache_enabled
+  # TODO(yaroslavvb): respect is_cache_enabled.
+  # TODO(yaroslavvb): deprecate since create_function is more elegant solution?
   def sum1(self, input_itensor):
     """Create a specialized op that sums over 1 dimensional vector.
     This avoids having to create Rank/Range ops that initialize indices
