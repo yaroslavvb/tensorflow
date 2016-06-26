@@ -22,8 +22,17 @@ from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops as ops_lib
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import session_ops
-from tensorflow.python.framework import constant_op
 from tensorflow.python.ops import gen_math_ops
+
+
+# x-version compatibility
+# constant_op moved in a558c6e3b38846727873b5afbbc3ba309ae5dff5
+try:
+  from tensorflow.python.framework import constant_op
+except ImportError:
+  from tensorflow.python.ops import constant_op
+
+
 
 __all__ = ["Env"]
 

@@ -16,7 +16,12 @@ import types
 from . import op as op_lib
 from . import util
 
-from tensorflow.python.framework import op_def_library
+# x-version compatibility
+# constant_op moved in a558c6e3b38846727873b5afbbc3ba309ae5dff5
+try:
+  from tensorflow.python.framework import op_def_library
+except ImportError:
+  from tensorflow.python.ops import op_def_library
 
 class ModuleRewriter(object):
   """Object that controls rewriting of module. It allows to create a new
