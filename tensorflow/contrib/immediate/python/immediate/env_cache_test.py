@@ -4,8 +4,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.contrib import immediate
-from tensorflow.contrib.immediate.python.immediate import test_util
+
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
+
 
 import tensorflow as tf
 
@@ -57,17 +63,11 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     val1 = env.numpy_to_itensor(1)
     val2 = env.numpy_to_itensor(2)
     is_graph_changed(env)
-    with env.g.device("gpu:0"):
-      val3 = val1 + val2
-      self.assertTrue(is_graph_changed(env))
-      val4 = val2 + val3
-      self.assertFalse(is_graph_changed(env))
-    with env.g.device("cpu:0"):
-      val4 = val1 + val2
-      self.assertTrue(is_graph_changed(env))
-      _val5 = val2 + val3
-      self.assertFalse(is_graph_changed(env))
-    
+    val4 = val1 + val2
+    self.assertTrue(is_graph_changed(env))
+    val3 = val1 + val2
+    _val5 = val2 + val3
+    self.assertFalse(is_graph_changed(env))
 
   def testAddCacheGpu(self):
     if not tf.test.is_built_with_cuda():
@@ -80,6 +80,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
 
     val1 = env.numpy_to_itensor(1)
     val2 = env.numpy_to_itensor(2)
+    
     with env.g.device("gpu:0"):
       # move tensors onto GPU
       val1 = env.tf.identity(val1)
@@ -88,6 +89,13 @@ class EnvCacheTest(test_util.ImmediateTestCase):
       self.assertTrue(is_graph_changed(env))
       val2 + val3
       self.assertFalse(is_graph_changed(env))
+      
+    with env.g.device("cpu:0"):
+      val4 = val1 + val2
+      self.assertTrue(is_graph_changed(env))
+      _val5 = val2 + val3
+      self.assertFalse(is_graph_changed(env))
+
 
   def testAddCacheMixed(self):
     if not tf.test.is_built_with_cuda():

@@ -33,9 +33,12 @@ from tensorflow.python.ops import gen_nn_ops
 exp = math.exp
 log = math.log
 
-
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
 
 env = immediate.Env({"tf": tf, "gen_nn_ops": gen_nn_ops})
 tf = env.tf

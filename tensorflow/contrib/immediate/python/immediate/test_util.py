@@ -10,8 +10,11 @@ from tensorflow.core.protobuf import config_pb2
 from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.client import device_lib
 
-import tensorflow.contrib.immediate as immediate
-
+try:
+  import tensorflow.contrib.immediate as immediate
+except:
+  import immediate
+  
 class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
   """Base class for tests that need to test TensorFlow in immediate mode.
   """

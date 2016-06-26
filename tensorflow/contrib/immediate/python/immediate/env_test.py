@@ -7,8 +7,12 @@ from __future__ import print_function
 import numpy as np
 
 import tensorflow as tf
-from tensorflow.contrib.immediate.python.immediate import test_util
 
+try:
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  from immediate import test_util
+  
 class EnvTest(test_util.ImmediateTestCase):
 
   def testInit(self):

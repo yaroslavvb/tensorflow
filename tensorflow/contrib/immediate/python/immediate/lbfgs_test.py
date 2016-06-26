@@ -6,8 +6,12 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib.immediate.python.immediate import test_util
+  import tensorflow.contrib.immediate as immediate
+except:
+  import immediate
+  from immediate import test_util
 
 def mnistCost(train_data_flat, train_labels, x0, env):
   """Creates a simple linear model that evaluates cross-entropy loss and
@@ -69,16 +73,19 @@ def mnistCost(train_data_flat, train_labels, x0, env):
 class LbfgsTest(tf.test.TestCase):
 
   def testLbfgsTraining(self):
-    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
-
     # create immediate environment
     env = immediate.Env(tf)
     ti = env.tf
     env.set_default_graph()  # set env's graph as default graph
 
     # Load 100 mnist training images/labels
+    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
+    if not os.path.exists(prefix):
+      prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata"
+
     data_filename = prefix+"/mnist_data_32x32_small.npy"
     labels_filename = prefix+"/mnist_labels_small.npy"
+
 
     # work-around for Jenkins setup issue
     # https://github.com/tensorflow/tensorflow/issues/2855

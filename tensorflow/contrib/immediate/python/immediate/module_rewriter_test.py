@@ -5,9 +5,15 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow.contrib.immediate as immediate
-from tensorflow.contrib.immediate.python.immediate import module_rewriter
-from tensorflow.contrib.immediate.python.immediate import test_util
+
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib.immediate.python.immediate import module_rewriter
+except:
+  import immediate
+  from immediate import test_util
+  from immediate import module_rewriter
 
 import contextlib
 import types

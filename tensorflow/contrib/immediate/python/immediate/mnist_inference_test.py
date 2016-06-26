@@ -6,8 +6,14 @@ import os
 import numpy as np
 import tensorflow as otf   # original TensorFlow namespace
 
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
+
+
 import tensorflow.models.image.mnist.convolutional as convolutional
 
 def fake_data(num_images):
@@ -25,11 +31,14 @@ def fake_data(num_images):
 class MnistInferenceTest(otf.test.TestCase):
 
   def testMnistInference(self):
-    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
-
     # create immediate environment
     env = immediate.Env(otf)
     tf = env.tf
+
+    # if not running from Bazel, get data directory from script's directory
+    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
+    if not os.path.exists(prefix):
+      prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata"
 
     # Load images
     test_data_filename = prefix+"/t10k-images-idx3-ubyte.gz"
@@ -43,6 +52,8 @@ class MnistInferenceTest(otf.test.TestCase):
             os.path.exists(test_labels_filename) and
             os.path.exists(meta_checkpoint_filename) and
             os.path.exists(checkpoint_filename)):
+
+      
       print("Couldn't find data dependency, aborting.")
       return True
 

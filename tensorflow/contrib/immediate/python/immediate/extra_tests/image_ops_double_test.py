@@ -32,8 +32,13 @@ from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import io_ops
 from tensorflow.python.platform import googletest
 
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
 
 import tensorflow as tf
 env = immediate.Env({"tf": tf, "io_ops": io_ops,
@@ -1248,6 +1253,9 @@ class PngTest(test_util.TensorFlowTestCase):
   def testExisting(self):
     # Read some real PNGs, converting to different channel numbers
     prefix = 'tensorflow/core/lib/png/testdata/'
+    if not os.path.exists(prefix[:-1]):
+      prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata/"
+      
     inputs = (1, 'lena_gray.png'), (4, 'lena_rgba.png')
     for channels_in, filename in inputs:
       for channels in 0, 1, 3, 4:
@@ -2574,6 +2582,8 @@ class PngTest2(test_util.TensorFlowTestCase):
   def testExisting(self):
     # Read some real PNGs, converting to different channel numbers
     prefix = 'tensorflow/core/lib/png/testdata/'
+    if not os.path.exists(prefix[:-1]):
+      prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata/"
     inputs = (1, 'lena_gray.png'), (4, 'lena_rgba.png')
     for channels_in, filename in inputs:
       for channels in 0, 1, 3, 4:

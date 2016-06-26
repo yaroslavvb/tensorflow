@@ -20,11 +20,9 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensorflow.python.framework import test_util
-
+  
 from tensorflow.python.framework import constant_op
 from tensorflow.python.ops import math_ops
-
 
 from tensorflow.python.platform import googletest
 
@@ -33,8 +31,12 @@ log = np.log
 
 # changes to turn test into immediate mode test
 
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
 
 import tensorflow as tf
 env = immediate.Env(tf)

@@ -172,6 +172,9 @@ class ITensor(object):
   def __ge__(self, other):
     return self.env.tf.greater_equal(self, other)
 
+  def __abs__(self):
+    return self.env.tf.abs(self)
+  
   def __getitem__(self, slice_spec):
     # TODO(yaroslavvb) re-use _SliceHelper from array_ops.py instead of copying
     # the code. Right now it is not possible because _SliceHelper is not

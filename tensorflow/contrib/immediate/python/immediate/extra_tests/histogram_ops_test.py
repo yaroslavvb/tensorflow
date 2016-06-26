@@ -21,8 +21,13 @@ import numpy as np
 import tensorflow as tf
 
 # tf-immediate replacements
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
+
 env = immediate.Env(tf)
 tf = env.tf
 

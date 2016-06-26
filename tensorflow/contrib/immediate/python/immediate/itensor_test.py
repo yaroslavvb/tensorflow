@@ -6,10 +6,15 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-import tensorflow.contrib.immediate as immediate
-from tensorflow.contrib.immediate.python.immediate import test_util
-from tensorflow.contrib.immediate.python.immediate import itensor as itensor_lib
 
+try:
+  import tensorflow.contrib.immediate as immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib.immediate.python.immediate import itensor as itensor_lib
+except:
+  import immediate
+  from immediate import test_util
+  from immediate import itensor as itensor_lib
 
 class ITensorTest(test_util.TensorFlowTestCase):
 
