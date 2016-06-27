@@ -1,3 +1,6 @@
+# Taken from tensorflow/python/ops/image_ops_test.py,
+# run every test twice to test caching
+# 
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1190,6 +1193,9 @@ class JpegTest(test_util.TensorFlowTestCase):
     # Read a real jpeg and verify shape
     path = ('tensorflow/core/lib/jpeg/testdata/'
             'jpeg_merge_test1.jpg')
+    if not os.path.exists(path):
+      path = (os.path.dirname(os.path.realpath(__file__))+"/testdata/"+
+                "jpeg_merge_test1.jpg")
     with self.test_session() as sess:
       jpeg0 = io_ops.read_file(path)
       image0 = image_ops.decode_jpeg(jpeg0)
@@ -1202,6 +1208,8 @@ class JpegTest(test_util.TensorFlowTestCase):
   def testCmyk(self):
     # Confirm that CMYK reads in as RGB
     base = 'tensorflow/core/lib/jpeg/testdata'
+    if not os.path.exists(base):
+      base = os.path.dirname(os.path.realpath(__file__))+"/testdata"
     rgb_path = os.path.join(base, 'jpeg_merge_test1.jpg')
     cmyk_path = os.path.join(base, 'jpeg_merge_test1_cmyk.jpg')
     shape = 256, 128, 3
@@ -2519,6 +2527,9 @@ class JpegTest2(test_util.TensorFlowTestCase):
     # Read a real jpeg and verify shape
     path = ('tensorflow/core/lib/jpeg/testdata/'
             'jpeg_merge_test1.jpg')
+    if not os.path.exists(path):
+      path = (os.path.dirname(os.path.realpath(__file__))+"/testdata/"+
+                "jpeg_merge_test1.jpg")
     with self.test_session() as sess:
       jpeg0 = io_ops.read_file(path)
       image0 = image_ops.decode_jpeg(jpeg0)
@@ -2531,6 +2542,8 @@ class JpegTest2(test_util.TensorFlowTestCase):
   def testCmyk(self):
     # Confirm that CMYK reads in as RGB
     base = 'tensorflow/core/lib/jpeg/testdata'
+    if not os.path.exists(base):
+      base = os.path.dirname(os.path.realpath(__file__))+"/testdata"
     rgb_path = os.path.join(base, 'jpeg_merge_test1.jpg')
     cmyk_path = os.path.join(base, 'jpeg_merge_test1_cmyk.jpg')
     shape = 256, 128, 3

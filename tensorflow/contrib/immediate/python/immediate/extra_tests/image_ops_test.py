@@ -1,3 +1,4 @@
+# Taken from tensorflow/python/ops/image_ops_test.py
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,8 +33,12 @@ from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import io_ops
 from tensorflow.python.platform import googletest
 
-from tensorflow.contrib.immediate.python.immediate import test_util
-import tensorflow.contrib.immediate as immediate
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
 
 import tensorflow as tf
 env = immediate.Env({"tf": tf, "io_ops": io_ops,
@@ -1196,6 +1201,9 @@ class JpegTest(test_util.TensorFlowTestCase):
     # Read a real jpeg and verify shape
     path = ('tensorflow/core/lib/jpeg/testdata/'
             'jpeg_merge_test1.jpg')
+    if not os.path.exists(path):
+      path = (os.path.dirname(os.path.realpath(__file__))+"/testdata/"+
+                "jpeg_merge_test1.jpg")
     with self.test_session() as sess:
       jpeg0 = io_ops.read_file(path)
       image0 = image_ops.decode_jpeg(jpeg0)
@@ -1208,6 +1216,8 @@ class JpegTest(test_util.TensorFlowTestCase):
   def testCmyk(self):
     # Confirm that CMYK reads in as RGB
     base = 'tensorflow/core/lib/jpeg/testdata'
+    if not os.path.exists(base):
+      base = os.path.dirname(os.path.realpath(__file__))+"/testdata"
     rgb_path = os.path.join(base, 'jpeg_merge_test1.jpg')
     cmyk_path = os.path.join(base, 'jpeg_merge_test1_cmyk.jpg')
     shape = 256, 128, 3
@@ -1259,6 +1269,8 @@ class PngTest(test_util.TensorFlowTestCase):
   def testExisting(self):
     # Read some real PNGs, converting to different channel numbers
     prefix = 'tensorflow/core/lib/png/testdata/'
+    if not os.path.exists(prefix[:-1]):
+      prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata/"
     inputs = (1, 'lena_gray.png'), (4, 'lena_rgba.png')
     for channels_in, filename in inputs:
       for channels in 0, 1, 3, 4:
