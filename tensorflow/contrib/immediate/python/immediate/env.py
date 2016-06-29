@@ -11,10 +11,13 @@ from __future__ import print_function
 import numbers
 import numpy as np
 
-from . import itensor as itensor_lib
-from . import op as op_lib
-from . import module_rewriter as module_rewriter_lib
-from . import util as util
+from .itensor import ITensor
+from .module_rewriter import ImmediateRewriter
+from .module_rewriter import ModuleRewriter
+from .op import Op
+from .util import get_current_device_string
+from .util import is_list_or_tuple
+from .util import shorten_device_string
 
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.python.client import session
@@ -77,8 +80,8 @@ class Env(object):
     self._gc_default = self.session._DEAD_HANDLES_THRESHOLD
 
     # wrap provided namespace for immediate execution
-    symbol_rewriter = module_rewriter_lib.ImmediateRewriter(self)
-    rewriter = module_rewriter_lib.ModuleRewriter(symbol_rewriter, "immediate.")
+    symbol_rewriter = ImmediateRewriter(self)
+    rewriter = ModuleRewriter(symbol_rewriter, "immediate.")
 
     # tf_namespace is like {"tf": tf, "gen_math_ops": gen_math_ops}
     if isinstance(tf_namespace, dict):
@@ -183,12 +186,12 @@ class Env(object):
     """
 
     tf_dtype = tensor_handle._dtype
-    current_device = util.get_current_device_string(self.g)
+    current_device = get_current_device_string(self.g)
     current_device_sanitized = current_device.replace(":", "")
 
     device_func = session_ops.TensorHandle._get_device_name
     handle_device = device_func(tensor_handle.handle)
-    handle_device = util.shorten_device_string(handle_device)
+    handle_device = shorten_device_string(handle_device)
     handle_device_sanitized = handle_device.replace(":", "")
 
     key = ("handle_to_numpy", tf_dtype.name, handle_device, current_device)
@@ -222,7 +225,7 @@ class Env(object):
     """
 
     tf_dtype = dtypes.as_dtype(array.dtype)
-    current_device = util.get_current_device_string(self.g)
+    current_device = get_current_device_string(self.g)
     current_device_sanitized = current_device.replace(":", "")
     key = ("numpy_to_handle", tf_dtype.name, current_device)
 
@@ -246,7 +249,7 @@ class Env(object):
 
 
   def handle_to_itensor(self, handle):
-    return itensor_lib.ITensor(self, handle)
+    return ITensor(self, handle)
 
   def itensor_to_numpy(self, itensor):
     """Convert itensor to numpy array."""
@@ -266,7 +269,7 @@ class Env(object):
     else:
       np_dtype = None
 
-    if isinstance(array, itensor_lib.ITensor):
+    if isinstance(array, ITensor):
       raise ValueError("Passed ITensor instead of numpy into "
                        "numpy_to_itensor.")
 
@@ -298,7 +301,7 @@ class Env(object):
       array = array.reshape(shape)
 
     handle = self.numpy_to_handle(array)
-    return itensor_lib.ITensor(self, handle)
+    return ITensor(self, handle)
 
   def tensor_to_itensor(self, tensor):
 
@@ -307,7 +310,7 @@ class Env(object):
       handle_op = session_ops.get_session_handle(tensor,
                                                  name=op_prefix+".handle")
     handle = self.run(handle_op)
-    return itensor_lib.ITensor(self, handle)
+    return ITensor(self, handle)
 
 
   def constant(self, values, dtype=None, shape=None, name="Const"):
@@ -379,7 +382,7 @@ class Env(object):
       input_holders.append(self.input_dict[input_])
 
     output_handle_ops = []
-    if util.is_list_or_tuple(outputs):
+    if is_list_or_tuple(outputs):
       for (i,tensor) in enumerate(outputs):
         op_name = "custom_function_%s.output.%s"%(name, i)
         output_handle_ops.append(session_ops.get_session_handle(tensor,
@@ -395,10 +398,10 @@ class Env(object):
         feed_dict[input_holders[i]] = arg.tf_handle
 
       tensor_handles = self.sess.run(output_handle_ops, feed_dict=feed_dict)
-      if util.is_list_or_tuple(tensor_handles):
-        return [itensor_lib.ITensor(self, t) for t in tensor_handles]
+      if is_list_or_tuple(tensor_handles):
+        return [ITensor(self, t) for t in tensor_handles]
       else:
-        return itensor_lib.ITensor(self, tensor_handles)
+        return ITensor(self, tensor_handles)
       
     return func
 
@@ -414,7 +417,7 @@ class Env(object):
 
     op_type_name = "sum1"
     tf_dtype = input_itensor.dtype
-    current_device = util.get_current_device_string(self.g)
+    current_device = get_current_device_string(self.g)
     current_device_sanitized = current_device.replace(":", "")
     key = (op_type_name, tf_dtype.name, current_device_sanitized)
 
@@ -439,7 +442,7 @@ class Env(object):
         output_handle = session_ops.get_session_handle(output,
                                                        op_prefix+".handle")
 
-      op = op_lib.Op(self, input_holders, output_handle)
+      op = Op(self, input_holders, output_handle)
       self.cache_add(key, op)
 
     return op(input=input_itensor)

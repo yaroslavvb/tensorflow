@@ -13,8 +13,13 @@ import six
 import sys
 import types
 
-from . import op as op_lib
-from . import util
+from .op import ConstantOpWrapper
+from .op import ConstantValueWrapper
+from .op import ConvertToTensorWrapper
+from .op import OpDefLibraryWrapper
+from .util import get_symbol_file
+from .util import is_contextlib_wrapped_function
+from .util import make_cell
 
 # x-version compatibility
 # constant_op moved in a558c6e3b38846727873b5afbbc3ba309ae5dff5
@@ -121,7 +126,7 @@ class ModuleRewriter(object):
 
       # Case 2: symbol is a module which may be affected by symbol_rewriter
       elif isinstance(symbol, types.ModuleType):  # prevent infinite recursion
-        if util.get_symbol_file(symbol) not in self._module_stack:
+        if get_symbol_file(symbol) not in self._module_stack:
           new_symbol = self._rewrite_module(symbol)
 
           # copied modules always get a new name (prefixed with module_prefix)
@@ -130,7 +135,7 @@ class ModuleRewriter(object):
 
       # Case 3: contextlib-decorated functions have closures, treat them like
       # functions in new modules, with additional copying of closures
-      elif util.is_contextlib_wrapped_function(symbol):
+      elif is_contextlib_wrapped_function(symbol):
         assert len(symbol.__closure__) == 1
         wrapped_function = symbol.__closure__[0].cell_contents
         assert isinstance(wrapped_function, types.FunctionType), ("Only know "
@@ -160,7 +165,7 @@ class ModuleRewriter(object):
         # If a function is defined in a different module, ie "import x from y"
         # copy "y" if necessary and update x to to point to new module
         if symbol.__module__ != original_module.__name__:
-          symbol_file = util.get_symbol_file(symbol)
+          symbol_file = get_symbol_file(symbol)
           if symbol_file and symbol_file not in self._module_stack:
             symbol_module = sys.modules[symbol.__module__]
             new_symbol_module = self._rewrite_module(symbol_module)
@@ -200,7 +205,7 @@ class ModuleRewriter(object):
         # if it's contextlib-wrapped function, its definition lies in different
         # module, since this definition wasn't updated, the different module
         # wasn't updated either, so retain original reference
-        if util.is_contextlib_wrapped_function(symbol):
+        if is_contextlib_wrapped_function(symbol):
           new_symbol = symbol
 
         elif symbol.__module__ == original_module.__name__:
@@ -242,20 +247,20 @@ class ImmediateRewriter(object):
   def __call__(self, symbol):
     # replace _op_lib_def in gen_.*_ops files
     if isinstance(symbol, op_def_library.OpDefLibrary):
-      return op_lib.OpDefLibraryWrapper(self.env, symbol)
+      return OpDefLibraryWrapper(self.env, symbol)
 
     if isinstance(symbol, types.FunctionType):
       if (symbol.__name__ == 'convert_to_tensor' and
           symbol.__module__ == 'tensorflow.python.framework.ops'):
-        return op_lib.ConvertToTensorWrapper(self.env, symbol)
+        return ConvertToTensorWrapper(self.env, symbol)
 
       if (symbol.__name__ == 'constant' and
           symbol.__module__ == 'tensorflow.python.framework.constant_op'):
-        return op_lib.ConstantOpWrapper(self.env, symbol)
+        return ConstantOpWrapper(self.env, symbol)
 
       if (symbol.__name__ == 'constant_value' and
           symbol.__module__ == 'tensorflow.python.framework.tensor_util'):
-        return op_lib.ConstantValueWrapper(self.env, symbol)
+        return ConstantValueWrapper(self.env, symbol)
 
 def copy_function(old_func, updated_module):
   """Copies a function, updating it's globals to point to updated_module."""
@@ -276,7 +281,7 @@ def copy_function_with_closure(old_func, updated_module,
 
   assert old_func.__closure__ and len(old_func.__closure__) == 1
 
-  cell = util.make_cell()
+  cell = make_cell()
   PyCell_Set = ctypes.pythonapi.PyCell_Set
 
   # ctypes.pythonapi functions need to have argtypes and restype set manually
@@ -327,10 +332,10 @@ def copy_class(old_class, updated_module):
           continue
 
         assert isinstance(wrapped_function, types.FunctionType)
-        assert util.is_contextlib_wrapped_function(entry)
+        assert is_contextlib_wrapped_function(entry)
 
         new_wrapped_function = copy_function(wrapped_function, updated_module)
-        new_closure = (util.make_cell(new_wrapped_function),)
+        new_closure = (make_cell(new_wrapped_function),)
         new_entry = types.FunctionType(entry.__code__, entry.__globals__,
                                        name=entry.__name__,
                                        argdefs=entry.__defaults__,

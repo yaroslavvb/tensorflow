@@ -9,17 +9,25 @@ import tensorflow as tf
 
 from tensorflow.python.client import device_lib
 
-class TensorHandleTest(tf.test.TestCase):
+try:
+  from tensorflow.contrib import immediate
+  from tensorflow.contrib.immediate.python.immediate import test_util
+except:
+  import immediate
+  from immediate import test_util
+
+class TensorHandleTest(test_util.ImmediateTestCase):
 
   def testHandle(self):
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     def testHandleForType(tf_dtype):
       for use_gpu in [True, False]:
-        if not self._checkHaveGpu0():
-          continue
+        if not self.haveGpu0():
+          return True
         with self.test_session(use_gpu=use_gpu) as sess:
           n = 3
           input_value = tf.ones((n, n), dtype=tf_dtype)
@@ -51,7 +59,8 @@ class TensorHandleTest(tf.test.TestCase):
 
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     with tf.device("gpu:0"):
       val_op = tf.ones((), dtype=dt)
@@ -77,13 +86,14 @@ class TensorHandleTest(tf.test.TestCase):
     # Test for https://github.com/tensorflow/tensorflow/issues/2587
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     config = tf.ConfigProto()
     with self.test_session(config=config) as sess:
       dtype = tf.float32
       for device in ["cpu:0", "gpu:0"]:
-        if not self._checkHaveGpu0():
+        if not self.haveGpu0():
           continue
         with tf.device(device):
           a_const = tf.constant(1, dtype)
@@ -96,7 +106,8 @@ class TensorHandleTest(tf.test.TestCase):
   def testHandleDeletion(self):
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     dtype = tf.float32
 
@@ -121,16 +132,6 @@ class TensorHandleTest(tf.test.TestCase):
     for _ in range(20):
       x_handle = sess.run(add_output, feed_dict={add_holder1: one_handle.handle,
                                                  add_holder2: x_handle.handle})
-
-  def _checkHaveGpu0(self):
-    device_names = [d.name for d in device_lib.list_local_devices()]
-    return("/gpu:0" in device_names)
-    
-  def _assertHaveGpu0(self):
-    """Check that GPU0 is available."""
-
-    device_names = [d.name for d in device_lib.list_local_devices()]
-    self.assertTrue("/gpu:0" in device_names)
 
 if __name__ == "__main__":
   tf.test.main()

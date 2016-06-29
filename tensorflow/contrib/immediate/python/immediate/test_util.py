@@ -28,9 +28,9 @@ class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
   def tearDown(self):
     pass
 
-  def _assertHaveGpu0(self):
+  def haveGpu0(self):
     device_names = [d.name for d in device_lib.list_local_devices()]
-    self.assertTrue("/gpu:0" in device_names)
+    return "/gpu:0" in device_names
 
   @contextlib.contextmanager
   def test_env(self, tf=None):

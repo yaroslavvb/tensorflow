@@ -16,8 +16,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from . import itensor as itensor_lib
-from . import util as util
+from .itensor import ITensor
+from .util import IsListParameter
+from .util import get_current_device_string
+from .util import is_list_or_tuple
+from .util import shorten_device_string
+from .util import shorten_device_string
 
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops as ops_lib
@@ -56,17 +60,17 @@ class Op(object):
     for argname in self.input_holders:
       itensor = kwargs[argname]
       holder = self.input_holders[argname]
-      if util.is_list_or_tuple(holder):
+      if is_list_or_tuple(holder):
         for subholder, subtensor in zip(holder, itensor):
           feed_dict[subholder] = subtensor.tf_handle
       else:
         feed_dict[holder] = itensor.tf_handle
 
     tensor_handle = self.env.run(self.output_handle, feed_dict=feed_dict)
-    if util.is_list_or_tuple(tensor_handle):
-      return [itensor_lib.ITensor(self.env, t) for t in tensor_handle]
+    if is_list_or_tuple(tensor_handle):
+      return [ITensor(self.env, t) for t in tensor_handle]
     else:
-      return itensor_lib.ITensor(self.env, tensor_handle)
+      return ITensor(self.env, tensor_handle)
 
   def __repr__(self):
     return "Op(%s)" % (str(self.name))
@@ -114,7 +118,7 @@ class OpDefLibraryWrapper(object):
     convert_to_itensors_with_type_inference(op_def, keywords,
                                             self.env.numpy_to_itensor)
 
-    current_device = util.get_current_device_string(self.env.g)
+    current_device = get_current_device_string(self.env.g)
     key = create_opdef_key(op_def, keywords, current_device)
     op = self.env.cache_lookup(key)
 
@@ -136,7 +140,7 @@ class OpDefLibraryWrapper(object):
 
     # prefix to use for node names in graph, like "Add.float32"
     if len(input_names) > 0 and isinstance(keywords[input_names[0]],
-                                           itensor_lib.ITensor):
+                                           ITensor):
       op_prefix = op_type_name + "."+keywords[input_names[0]].dtype.name
     else:
       op_prefix = op_type_name + ".no_dtype"
@@ -154,7 +158,7 @@ class OpDefLibraryWrapper(object):
         op_name = op_prefix + "." + str(input_num)
         itensor_input = keywords[input_name]
         # single tensor input
-        if isinstance(itensor_input, itensor_lib.ITensor):
+        if isinstance(itensor_input, ITensor):
           holder, tensor = session_ops.get_session_tensor(
               itensor_input.tf_handle, itensor_input.dtype, name=op_name)
           input_holders[input_name] = holder
@@ -162,7 +166,7 @@ class OpDefLibraryWrapper(object):
 
         # list input, such as for tf.concat, add converter for each element
         else:
-          assert util.is_list_or_tuple(itensor_input)
+          assert is_list_or_tuple(itensor_input)
           holder_list = []
           tensor_list = []
           for subinput_num, subinput in enumerate(itensor_input):
@@ -195,7 +199,7 @@ class OpDefLibraryWrapper(object):
         assert False, "Immediate mode only supports ops that produce tensors"
 
       else:  # list of Tensors, such as for tf.split
-        assert util.is_list_or_tuple(output)
+        assert is_list_or_tuple(output)
         output_handle = []
         for output_num, output_tensor in enumerate(output):
           op_name = op_name + "_" + str(output_num)
@@ -238,7 +242,7 @@ class ConvertToTensorWrapper(object):
     self.old_symbol = old_symbol
 
   def __call__(self, value, dtype=None, name=None, as_ref=False):
-    if isinstance(value, itensor_lib.ITensor):
+    if isinstance(value, ITensor):
       return value
     return self.env.numpy_to_itensor(value, dtype)
 
@@ -273,7 +277,7 @@ def create_opdef_key(op_def, keywords, op_device):
         assert attrs[input_arg.type_attr] == input_itensor.dtype
       else:
         # for list parameter, take dtype of first entry in list
-        if util.IsListParameter(input_arg):
+        if IsListParameter(input_arg):
           assert len(input_itensor) > 0
           attrs[input_arg.type_attr] = input_itensor[0].dtype
         else:
@@ -295,7 +299,7 @@ def create_opdef_key(op_def, keywords, op_device):
   def extract_device(itensor):
     """Extract device like "gpu:0" from itensor."""
     device_name = session_ops.TensorHandle._get_device_name(itensor.tf_handle)
-    return util.shorten_device_string(device_name)
+    return shorten_device_string(device_name)
 
   # extract input devices
   input_devices = {}
@@ -331,11 +335,11 @@ def create_opdef_key(op_def, keywords, op_device):
 def is_itensor_or_itensors(value):
   """Returns true if argument is immediate Tensor or list/tuple of Tensors."""
 
-  if isinstance(value, itensor_lib.ITensor):
+  if isinstance(value, ITensor):
     return True
   elif isinstance(value, list) or isinstance(value, tuple):
     for potential_tensor in value:
-      if not isinstance(potential_tensor, itensor_lib.ITensor):
+      if not isinstance(potential_tensor, ITensor):
         return False
     return True
   else:
@@ -359,18 +363,18 @@ def convert_to_itensors_with_type_inference(op_def, keywords,
   input_args = {arg.name: arg for arg in op_def.input_arg}
   for name in arg_names:
     itensor = keywords[name]
-    if util.IsListParameter(input_args[name]):
+    if IsListParameter(input_args[name]):
       assert isinstance(itensor, list) or isinstance(itensor, tuple)
       type_attr_name = input_args[name].type_attr
       if type_attr_name:
         for subtensor in itensor:
-          if isinstance(subtensor, itensor_lib.ITensor):
+          if isinstance(subtensor, ITensor):
             if type_attr_name in attrs:
               assert attrs[type_attr_name] == subtensor.dtype
             else:
               attrs[type_attr_name] = subtensor.dtype
     else:
-      if isinstance(itensor, itensor_lib.ITensor):
+      if isinstance(itensor, ITensor):
         type_attr_name = input_args[name].type_attr
         if type_attr_name:
           if type_attr_name in attrs:
@@ -387,11 +391,11 @@ def convert_to_itensors_with_type_inference(op_def, keywords,
     type_attr_name = input_args[name].type_attr
     inferred_dtype = attrs.get(type_attr_name, None)
 
-    if util.IsListParameter(input_args[name]):
+    if IsListParameter(input_args[name]):
       for i, subtensor in enumerate(itensor):
-        if not isinstance(subtensor, itensor_lib.ITensor):
+        if not isinstance(subtensor, ITensor):
           itensor[i] = numpy_to_itensor(itensor[i], inferred_dtype)
     else:
-      if not isinstance(itensor, itensor_lib.ITensor):
+      if not isinstance(itensor, ITensor):
         keywords[name] = numpy_to_itensor(itensor, inferred_dtype)
 

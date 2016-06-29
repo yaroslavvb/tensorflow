@@ -39,7 +39,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
   def testSum1CacheGpu(self):
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     env = immediate.Env(tf)
     with env.g.device("cpu:0"):
@@ -72,7 +73,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
   def testAddCacheGpu(self):
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     env = immediate.Env(tf)
     is_graph_changed(env)
@@ -100,7 +102,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
   def testAddCacheMixed(self):
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     env = immediate.Env(tf)
     is_graph_changed(env)
@@ -169,7 +172,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
 
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     with env.g.device("gpu:0"):
       gpu_val1 = env.tf.identity(val1)
@@ -211,7 +215,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
 
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     with env.device("gpu:0"):
       env.numpy_to_itensor(5)
@@ -237,7 +242,8 @@ class EnvCacheTest(test_util.ImmediateTestCase):
 
     if not tf.test.is_built_with_cuda():
       return True
-    self._assertHaveGpu0()
+    if not self.haveGpu0():
+      return True
 
     with env.device("gpu:0"):
       gpu_val1 = env.tf.identity(val1)
