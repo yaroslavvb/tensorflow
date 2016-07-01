@@ -139,21 +139,22 @@ py_test(
     ],
 )
 
-py_test(
-    name = "image_ops_test",
-    srcs = ["python/immediate/extra_tests/image_ops_test.py"],
-    size = "medium",
-    srcs_version = "PY2AND3",
-    deps = [
-           ":immediate_py",
-           ":immediate_test_lib",
-           "//tensorflow:tensorflow_py",
-    ],
+# TODO(yaroslavvb): uncomment once all "with_devices" tests are removed
+# py_test(
+#     name = "image_ops_test",
+#     srcs = ["python/immediate/extra_tests/image_ops_test.py"],
+#     size = "medium",
+#     srcs_version = "PY2AND3",
+#     deps = [
+#            ":immediate_py",
+#            ":immediate_test_lib",
+#            "//tensorflow:tensorflow_py",
+#     ],
 
-    data = [
-        "//tensorflow/core:image_testdata",
-    ],
-)
+#     data = [
+#         "//tensorflow/core:image_testdata",
+#     ],
+# )
 
 # NOTE(yaroslavvb): uncomment once image_ops stabilizes
 # py_test(
