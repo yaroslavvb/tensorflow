@@ -19,7 +19,7 @@ echo "Running mnist_inference_test.py"
 python mnist_inference_test.py
 echo "Running lbfgs_test.py"
 python lbfgs_test.py
-echo "Running image_ops_double_test"
-python extra_tests/image_ops_double_test.py
+# echo "Running image_ops_double_test"
+# python extra_tests/image_ops_double_test.py
 echo "Running image_ops_test"
 python extra_tests/image_ops_test.py
