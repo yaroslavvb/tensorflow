@@ -11,16 +11,16 @@ from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.client import device_lib
 
 try:
-  import tensorflow.contrib.immediate as immediate
+  import tensorflow.contrib.imperative as imperative
 except:
-  import immediate
+  import imperative
   
-class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
-  """Base class for tests that need to test TensorFlow in immediate mode.
+class ImperativeTestCase(tf_test_util.TensorFlowTestCase):
+  """Base class for tests that need to test TensorFlow in imperative mode.
   """
 
   def __init__(self, methodName="runTest"):
-    super(ImmediateTestCase, self).__init__(methodName)
+    super(ImperativeTestCase, self).__init__(methodName)
 
   def setUp(self):
     pass
@@ -34,7 +34,7 @@ class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
 
   @contextlib.contextmanager
   def test_env(self, tf=None):
-    """Returns a immediate Environment for use in executing tests.
+    """Returns a imperative Environment for use in executing tests.
 
     Example:
 
@@ -58,31 +58,31 @@ class ImmediateTestCase(tf_test_util.TensorFlowTestCase):
       config.graph_options.optimizer_options.opt_level = -1
       return config
 
-    env = immediate.Env.get_global_default_env()
+    env = imperative.Env.get_global_default_env()
     if env is None:
-      env = immediate.Env(tf, config=prepare_config())
+      env = imperative.Env(tf, config=prepare_config())
 
     with env.g.as_default():
       yield env
 
 
-class TensorFlowTestCase(ImmediateTestCase):
+class TensorFlowTestCase(ImperativeTestCase):
   """Class for porting tests that expect TensorFlowTestCase."""
 
   @contextlib.contextmanager
   def test_session(self, use_gpu=False):
     """Compatibility method for test_util."""
 
-    env = immediate.Env.get_global_default_env()
+    env = imperative.Env.get_global_default_env()
     assert env, "Must initialize Env before using test_session"
 
     with env.g.as_default():
-      immediate_session = ImmediateSession()
-      yield immediate_session
+      imperative_session = ImperativeSession()
+      yield imperative_session
 
 
-class ImmediateSession(object):
-  """Immediate-mode replacement of Session."""
+class ImperativeSession(object):
+  """Imperative-mode replacement of Session."""
 
   def run(self, fetches, *_unused_args, **_unused_kwargs):
     return [itensor.as_numpy() for itensor in fetches]

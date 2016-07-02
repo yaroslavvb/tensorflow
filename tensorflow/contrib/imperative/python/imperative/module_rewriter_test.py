@@ -7,13 +7,13 @@ from __future__ import print_function
 import tensorflow as tf
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
-  from tensorflow.contrib.immediate.python.immediate import module_rewriter
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
+  from tensorflow.contrib.imperative.python.imperative import module_rewriter
 except:
-  import immediate
-  from immediate import test_util
-  from immediate import module_rewriter
+  import imperative
+  from imperative import test_util
+  from imperative import module_rewriter
 
 import contextlib
 import types
@@ -40,18 +40,18 @@ class ModuleRewriterTest(test_util.TensorFlowTestCase):
 
   # constant and convert_to_tensor are overridden to return itensors
   def testConstant(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     result = env.tf.constant(1)
     self.assertEqual(type(result).__name__, "ITensor")
 
   def testConvertToTensor(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     result = env.tf.convert_to_tensor([1, 2, 3])
     self.assertEqual(type(result).__name__, "ITensor")
 
   # constantValue is overridden to accept itensors instead of tensors
   def testConstantValue(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     myval = env.numpy_to_itensor(1)
     result = env.tf.python.framework.tensor_util.constant_value(myval)
     self.assertEqual(result, 1)
@@ -60,8 +60,8 @@ class ModuleRewriterTest(test_util.TensorFlowTestCase):
     """Try running functions to catch Python symbol linking errors."""
 
     with self.test_env(tf) as env:
-      symbol_rewriter = module_rewriter.ImmediateRewriter(env)
-      rewriter = module_rewriter.ModuleRewriter(symbol_rewriter, "immediate.")
+      symbol_rewriter = module_rewriter.ImperativeRewriter(env)
+      rewriter = module_rewriter.ModuleRewriter(symbol_rewriter, "imperative.")
       new_tf = rewriter(tf)
       env.__dict__['tf'] = new_tf
 

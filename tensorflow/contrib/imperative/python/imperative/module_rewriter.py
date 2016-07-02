@@ -237,9 +237,9 @@ class ModuleRewriter(object):
     return self._module_fname_dict.get(fname, None)
 
 
-class ImmediateRewriter(object):
-  """A symbol rewriter that replaced all symbols relevant for immediate
-  execution with corresponding immediate versions."""
+class ImperativeRewriter(object):
+  """A symbol rewriter that replaced all symbols relevant for imperative
+  execution with corresponding imperative versions."""
 
   def __init__(self, env):
     self.env = env

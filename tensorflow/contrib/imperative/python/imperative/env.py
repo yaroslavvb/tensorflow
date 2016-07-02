@@ -1,7 +1,7 @@
-"""Implementation of Immediate execution environment. All user-facing elements
-of immediate execution framework should go here.
+"""Implementation of Imperative  environment. All user-facing elements
+of framework should go here.
 
-Env: immediate execution environment.
+Env: imperative environment.
 """
 
 from __future__ import absolute_import
@@ -12,7 +12,7 @@ import numbers
 import numpy as np
 
 from .itensor import ITensor
-from .module_rewriter import ImmediateRewriter
+from .module_rewriter import ImperativeRewriter
 from .module_rewriter import ModuleRewriter
 from .op import Op
 from .util import get_current_device_string
@@ -54,13 +54,13 @@ class Env(object):
   parts of existing graph when possible.
 
   import tensorflow as tf
-  env = immediate.Env(tf)
+  env = imperative.Env(tf)
   c = env.tf.add(1, 2)
 
   """
 
   def __init__(self, tf_namespace, config=None):
-    """Creates new immediate environment.
+    """Creates new imperative environment.
 
     Args:
       tf_namespace: tensorflow namespace to wrap, or a dictionary of namespace
@@ -79,9 +79,9 @@ class Env(object):
     self.sess = session.Session(config=config, graph=self.g)
     self._gc_default = self.session._DEAD_HANDLES_THRESHOLD
 
-    # wrap provided namespace for immediate execution
-    symbol_rewriter = ImmediateRewriter(self)
-    rewriter = ModuleRewriter(symbol_rewriter, "immediate.")
+    # wrap provided namespace for imperative mode
+    symbol_rewriter = ImperativeRewriter(self)
+    rewriter = ModuleRewriter(symbol_rewriter, "imperative.")
 
     # tf_namespace is like {"tf": tf, "gen_math_ops": gen_math_ops}
     if isinstance(tf_namespace, dict):
@@ -139,13 +139,13 @@ class Env(object):
 
   @property
   def session(self):
-    """Session associated with current immediate env."""
+    """Session associated with current imperative env."""
     return self.sess
 
 
   @property
   def graph(self):
-    """Graph associated with current immediate env."""
+    """Graph associated with current imperative env."""
     return self.g
 
 
@@ -166,7 +166,7 @@ class Env(object):
     """Retrieve Op object from the cache."""
     if self.CACHE_ENABLED:
       if self.PRINT_CACHE_HITS:
-        print("Immediate cache hit for %s" %(str(key)))
+        print("Imperative cache hit for %s" %(str(key)))
       return self.op_cache.get(key, None)
 
 
@@ -200,7 +200,7 @@ class Env(object):
       holder, tensor = self.op_cache[key]
     else:
       if self.PRINT_CACHE_MISSES:
-        print("Immediate cache miss for %s"%(str(key)))
+        print("Imperative cache miss for %s"%(str(key)))
 
       op_prefix = "handle_to_numpy.%s.%s.%s" % (tf_dtype.name,
                                                 handle_device_sanitized,
@@ -233,7 +233,7 @@ class Env(object):
       holder, handle_op = self.op_cache[key]
     else:
       if self.PRINT_CACHE_MISSES:
-        print("Immediate cache miss for %s"%(str(key)))
+        print("Imperative cache miss for %s"%(str(key)))
 
       op_prefix = "numpy_to_handle.%s.%s" % (tf_dtype.name,
                                              current_device_sanitized)
@@ -260,7 +260,7 @@ class Env(object):
 
 
   def numpy_to_itensor(self, array, dtype=None, shape=None):
-    """Convert numpy.ndarray or compatible type to immediate.Tensor."""
+    """Convert numpy.ndarray or compatible type to imperative.Tensor."""
 
     # convert to numpy dtype if necessary
     if dtype:
@@ -314,7 +314,7 @@ class Env(object):
 
 
   def constant(self, values, dtype=None, shape=None, name="Const"):
-    """Immediate specific implementation of constant-op."""
+    """Imperative specific implementation of constant-op."""
 
     np_dtype = None
 
@@ -423,11 +423,11 @@ class Env(object):
 
     if key in self.op_cache:
       if self.PRINT_CACHE_HITS:
-        print("Immediate cache hit for %s"%(str(key)))
+        print("Imperative cache hit for %s"%(str(key)))
       op = self.op_cache[key]
     else:
       if self.PRINT_CACHE_MISSES:
-        print("Immediate cache miss for %s"%(str(key)))
+        print("Imperative cache miss for %s"%(str(key)))
       with self.g.as_default():
         op_prefix = op_type_name + "." + tf_dtype.name
         holder, tensor = session_ops.get_session_tensor(
@@ -449,14 +449,14 @@ class Env(object):
 
 
   def set_default_graph(self):
-    """Sets default graph to the graph of this immediate environment."""
+    """Sets default graph to the graph of this imperative environment."""
     self.default_graph = self.g.as_default()
     self.default_graph.enforce_nesting = False
     self.default_graph.__enter__()
 
 
   def set_default_session(self):
-    """Sets default graph to the graph of this immediate environment."""
+    """Sets default graph to the graph of this imperative environment."""
     self.default_session = self.sess.as_default()
     self.default_session.enforce_nesting = False
     self.default_session.__enter__()

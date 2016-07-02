@@ -1,4 +1,4 @@
-"""Test of basic immediate Env functionality."""
+"""Test of basic imperative Env functionality."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -9,11 +9,11 @@ import numpy as np
 import tensorflow as tf
 
 try:
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  from immediate import test_util
+  from imperative import test_util
   
-class EnvTest(test_util.ImmediateTestCase):
+class EnvTest(test_util.ImperativeTestCase):
 
   def testInit(self):
     with self.test_env(tf) as _unused_env:

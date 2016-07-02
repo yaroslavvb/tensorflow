@@ -13,11 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 """
-Library for immediate execution in TensorFlow.
+Library for imperative execution in TensorFlow.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.contrib.immediate.python.immediate.env import *
+from tensorflow.contrib.imperative.python.imperative.env import *

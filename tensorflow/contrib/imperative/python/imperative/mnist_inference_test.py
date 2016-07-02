@@ -7,11 +7,11 @@ import numpy as np
 import tensorflow as otf   # original TensorFlow namespace
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
 
 import tensorflow.models.image.mnist.convolutional as convolutional
@@ -31,12 +31,12 @@ def fake_data(num_images):
 class MnistInferenceTest(otf.test.TestCase):
 
   def testMnistInference(self):
-    # create immediate environment
-    env = immediate.Env(otf)
+    # create imperative environment
+    env = imperative.Env(otf)
     tf = env.tf
 
     # if not running from Bazel, get data directory from script's directory
-    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
+    prefix = 'tensorflow/contrib/imperative/python/imperative/testdata'
     if not os.path.exists(prefix):
       prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata"
 

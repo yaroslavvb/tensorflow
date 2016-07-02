@@ -10,13 +10,13 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
-class TensorHandleTest(test_util.ImmediateTestCase):
+class TensorHandleTest(test_util.ImperativeTestCase):
 
   def testHandle(self):
     if not tf.test.is_built_with_cuda():

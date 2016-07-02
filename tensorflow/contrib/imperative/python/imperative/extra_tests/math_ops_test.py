@@ -29,17 +29,17 @@ from tensorflow.python.platform import googletest
 exp = np.exp
 log = np.log
 
-# changes to turn test into immediate mode test
+# changes to turn test into imperative mode test
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
 import tensorflow as tf
-env = immediate.Env(tf)
+env = imperative.Env(tf)
 math_ops = env.tf
 constant_op = env.tf
 

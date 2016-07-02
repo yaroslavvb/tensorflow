@@ -7,11 +7,11 @@ import numpy as np
 import tensorflow as tf
 
 try:
-  from tensorflow.contrib.immediate.python.immediate import test_util
-  import tensorflow.contrib.immediate as immediate
+  from tensorflow.contrib.imperative.python.imperative import test_util
+  import tensorflow.contrib.imperative as imperative
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
 def mnistCost(train_data_flat, train_labels, x0, env):
   """Creates a simple linear model that evaluates cross-entropy loss and
@@ -64,7 +64,7 @@ def mnistCost(train_data_flat, train_labels, x0, env):
   env.sess.run(targets_init, feed_dict={labels_placeholder:
                                         train_labels[:batchSize]})
 
-  # create immediate wrapper of tensorflow graph we just constructed
+  # create imperative wrapper of tensorflow graph we just constructed
   # ITensor input is automatically converged and fed into param
   # and outputs are converted to ITensor objects and returned
   return env.make_function(inputs=[param], outputs=[loss, grad])
@@ -73,13 +73,13 @@ def mnistCost(train_data_flat, train_labels, x0, env):
 class LbfgsTest(tf.test.TestCase):
 
   def testLbfgsTraining(self):
-    # create immediate environment
-    env = immediate.Env(tf)
+    # create imperative environment
+    env = imperative.Env(tf)
     ti = env.tf
     env.set_default_graph()  # set env's graph as default graph
 
     # Load 100 mnist training images/labels
-    prefix = 'tensorflow/contrib/immediate/python/immediate/testdata'
+    prefix = 'tensorflow/contrib/imperative/python/imperative/testdata'
     if not os.path.exists(prefix):
       prefix = os.path.dirname(os.path.realpath(__file__))+"/testdata"
 
@@ -108,7 +108,7 @@ class LbfgsTest(tf.test.TestCase):
       return ti.reduce_sum(a*b)
 
     def lbfgs(opfunc, x, config, state):
-      """Line-by-line port of lbfgs.lua, using TensorFlow immediate mode.
+      """Line-by-line port of lbfgs.lua, using TensorFlow imperative mode.
       """
 
       maxIter = config.maxIter or 20

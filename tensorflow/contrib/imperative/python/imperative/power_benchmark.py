@@ -2,11 +2,11 @@ import tensorflow as tf
 import time
 
 try:
-  from tensorflow.contrib import immediate
+  from tensorflow.contrib import imperative
 except:
-  import immediate
+  import imperative
 
-env = immediate.Env(tf)
+env = imperative.Env(tf)
 
 n = 2024
 num_iters = 10

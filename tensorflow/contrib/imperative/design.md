@@ -1,10 +1,10 @@
-TF Immediate design (draft)
+TF Imperative design (draft)
 
 [[TOC]]
 
 # Goal
 
-Be able to have Torch-like/numpy-like execution which runs commands immediately.
+Be able to have Torch-like/numpy-like execution which runs commands imperatively.
 
 Ie. 
 
@@ -30,21 +30,21 @@ a = tf.ones((3,3))
 
 with
 
-import tensorflow.immediate as immediate
+import tensorflow.imperative as imperative
 
-tf = immediate.Environment("")
+tf = imperative.Environment("")
 
 a = tf.ones((3, 3))
 
 <TensorFlow graph construction>
 
-Where <TensorFlow graph construction> is unchanged between the two examples, except that operation in the second example are executed immediately and no "session.run" calls are needed.
+Where <TensorFlow graph construction> is unchanged between the two examples, except that operation in the second example are executed imperatively and no "session.run" calls are needed.
 
-Mirroring "tf.Tensor" objects, our framework has “immediate.Tensor” objects which have same semantics as “tf.Tensor” but are associated with concrete data in TensorFlow runtime. This means that in addition to standard operations you can do on tf.Tensor objects, immediate.Tensor objects can be printed, they can be used in Python control flow, and they can be converted to numpy arrays.
+Mirroring "tf.Tensor" objects, our framework has “imperative.Tensor” objects which have same semantics as “tf.Tensor” but are associated with concrete data in TensorFlow runtime. This means that in addition to standard operations you can do on tf.Tensor objects, imperative.Tensor objects can be printed, they can be used in Python control flow, and they can be converted to numpy arrays.
 
 For instance you can do the following
 
-tf = immediate.Environment("")     # initialize TensorFlow session with default values
+tf = imperative.Environment("")     # initialize TensorFlow session with default values
 
 a = tf.ones(())*3
 
@@ -62,9 +62,9 @@ print counter    # TensorFlow -> Python transfer of int32 value
 
 Note that "a>0" gets translated into tf.greater(a, 0). This is evaluated to a boolean in TensorFlow runtime, and then transferred back to Python runtime to control the loop.
 
-## immediate.Environment
+## imperative.Environment
 
-We implement it as an object to encapsulate "immediate environment". An immediate mode environment keeps track of the following
+We implement it as an object to encapsulate "imperative environment". An imperative mode environment keeps track of the following
 
 1. Session in which computations are run
 
@@ -74,29 +74,29 @@ We implement it as an object to encapsulate "immediate environment". An immediat
 
 4. Cache which maps operations to nodes in the graph that has already been created
 
-It also implements dispatch logic using "__getattr__" operator that mirrors operations available in TensorFlow namespace. For instance the following two will run identical computations in the TensorFlow graph, with the difference that the second line will perform execution immediately.
+It also implements dispatch logic using "__getattr__" operator that mirrors operations available in TensorFlow namespace. For instance the following two will run identical computations in the TensorFlow graph, with the difference that the second line will perform execution imperatively.
 
-tf_env = immediate.Environment()
+tf_env = imperative.Environment()
 
 tf.nn.conv2d(<args>)
 
 tf_env.nn.conv2d(<args>)
 
-### immediate.Environment dispatch logic
+### imperative.Environment dispatch logic
 
 Environment object must support all operations that are available in "tf" and “tf.nn” namespace. It does this by means of overriding “__getattr__” operator.
 
 Because of the way __getattr__ works, simple rewriting logic can only handle flat level functions like "tf_env.matmul" and not “tf_env.nn.conv2d”. To support the later use-case, we implement a helper class which redirects “tf.nn.conv2d” to “tf.nn__dot__conv2d” so that regular rewriting logic can be applied.
 
-tf_env.op(a, b, attr1=val1, attr2=val2) executes TensorFlow operation "op" with concrete values taken from a, b which are of immediate.Tensor type, and val1, val2, are non-Tensor types that determine op attributes. For reasons of simpler implementation (see OpFactory cache), we require that inputs (ie, immediate.Tensor objects) are always positional arguments, and non-inputs are always keyword arguments. This is already a convention used in regular TensorFlow, however, it is not enforced by the regular TensorFlow wrapper. immediatemmediate wrapper enforces it.
+tf_env.op(a, b, attr1=val1, attr2=val2) executes TensorFlow operation "op" with concrete values taken from a, b which are of imperative.Tensor type, and val1, val2, are non-Tensor types that determine op attributes. For reasons of simpler implementation (see OpFactory cache), we require that inputs (ie, imperative.Tensor objects) are always positional arguments, and non-inputs are always keyword arguments. This is already a convention used in regular TensorFlow, however, it is not enforced by the regular TensorFlow wrapper. imperativemmediate wrapper enforces it.
 
 The following happens when "tf_env.op(a, b, attr1=val1, attr2=val2)" is called:
 
-1. We obtain immediate.Operation object op by calling OpFactory with the original parameters
+1. We obtain imperative.Operation object op by calling OpFactory with the original parameters
 
     1. Ie, op = self.op_factory(a, b, attr1=val1, attr2=val2)
 
-2. Run op on inputs a,b to obtain immediate.Tensor or immediate.Tensors and return result
+2. Run op on inputs a,b to obtain imperative.Tensor or imperative.Tensors and return result
 
     2. Ie, return  op(a, b)
 
@@ -106,11 +106,11 @@ There’s a large number of Python-only ops (172 in tf.* namespace). Some of the
 
 For instance, tf.clip() is a Python-only op that expresses "clip" logic in terms of “tf.minimum” and “tf.maximum” ops which are TF-native ops.
 
-Because these ops can encompass arbitrary Python logic, it doesn’t make sense to implement the same caching strategy for them as for TF-native ops, and instead we monkey-patch them to use functions from our immediatemmediate environment, instead of deferring to original "tf." namespace.
+Because these ops can encompass arbitrary Python logic, it doesn’t make sense to implement the same caching strategy for them as for TF-native ops, and instead we monkey-patch them to use functions from our imperativemmediate environment, instead of deferring to original "tf." namespace.
 
 More specifically for Python-only op "reduce_sum" the flow looks like this:
 
-1. User initializes environment, tf=immediate.Environment()
+1. User initializes environment, tf=imperative.Environment()
 
 2. User calls tf.reduce_sum
 
@@ -120,35 +120,35 @@ More specifically for Python-only op "reduce_sum" the flow looks like this:
 
 5. Environment calls "fun"
 
-## immediate.Tensor
+## imperative.Tensor
 
-Data object in this model has type immediate.Tensor. An immediate tensor is associated with concrete array of data and is similar in spirit to numpy ndarray or Torch array. It refers to the underlying data by means of a TensorHandle which points to data stored in TensorFlow runtime. It overloads __del__ operator to release the memory in TensorFlow runtime when the object is garbage collected.
+Data object in this model has type imperative.Tensor. An imperative tensor is associated with concrete array of data and is similar in spirit to numpy ndarray or Torch array. It refers to the underlying data by means of a TensorHandle which points to data stored in TensorFlow runtime. It overloads __del__ operator to release the memory in TensorFlow runtime when the object is garbage collected.
 
-An Immediate Tensor object keeps track of the immediate environment it was created in, in order to be able to dispatch overloaded operators to calls in the correct environment.
+An Imperative Tensor object keeps track of the imperative environment it was created in, in order to be able to dispatch overloaded operators to calls in the correct environment.
 
-## immediate.Operation
+## imperative.Operation
 
 This is a Python class that simplifies running part of graph corresponding to a particular operation.
 
-immediate.Operation is tied to an instance of immediate.Environment and represents a specific tensorflow operation instantiated in the graph in that environment. It is created by immediate.OpFactory. For instance first time you call "nn.conv2d(<arguments>)"
+imperative.Operation is tied to an instance of imperative.Environment and represents a specific tensorflow operation instantiated in the graph in that environment. It is created by imperative.OpFactory. For instance first time you call "nn.conv2d(<arguments>)"
 
 # create the op
 
-op = immediate.OpFactory(‘matmul’, <arguments>)
+op = imperative.OpFactory(‘matmul’, <arguments>)
 
 # run the op
 
 result = op(<arguments>)
 
-Internally, each Operation creates a piece of graph which accepts TF tensor handles, runs the operation, and returns resulting tensor handles. Inputs into op are "immediate.Tensor" objects and the output is “immediate.Tensor” object as well
+Internally, each Operation creates a piece of graph which accepts TF tensor handles, runs the operation, and returns resulting tensor handles. Inputs into op are "imperative.Tensor" objects and the output is “imperative.Tensor” object as well
 
-## immediate.OpWrapper
+## imperative.OpWrapper
 
-This is an object that is an analogous in semantics to TensorFlow wrapper function, such as "tf.sum". When called, it calls the corresponding operation on TensorFlow side using immediate execution.
+This is an object that is an analogous in semantics to TensorFlow wrapper function, such as "tf.sum". When called, it calls the corresponding operation on TensorFlow side using imperative execution.
 
-It is returned by immediate.Environment and is a simple wrapper that creates an op using environment’s OpFactory and calls it.
+It is returned by imperative.Environment and is a simple wrapper that creates an op using environment’s OpFactory and calls it.
 
-## immediate.OpFactory
+## imperative.OpFactory
 
 OpFactory is used to create/reuse operations in current environment.
 
@@ -156,11 +156,11 @@ OpFactory is used to create/reuse operations in current environment.
 
 For efficiency we want to modify graph only when necessary and reuse parts of graph when possible. For instance, consider following code
 
- immediate.ones((3,3)) + immediate.ones((3,3))
+ imperative.ones((3,3)) + imperative.ones((3,3))
 
- immediate.ones((4,4)) + immediate.ones((4,4))
+ imperative.ones((4,4)) + imperative.ones((4,4))
 
- immediate.ones((3,3), dtype=tf.float32) + immediate.ones((3,3), dtype=tf.float32)
+ imperative.ones((3,3), dtype=tf.float32) + imperative.ones((3,3), dtype=tf.float32)
 
 The first addition would modify graph to create an addition OpDef, whereas second addition would reuse it. Third addition would modify the graph again because "dtype" is part of OpDef attributes, hence we need to create two separate OpDef’s to handle int32 and float32 addition.
 
@@ -170,9 +170,9 @@ op = op_factory(‘matmul’, <arguments>)
 
 It examines <arguments> list to figure out what kind of OpDef would be created during this call and checks cache to see if the necessary OpDef was already created in the current environment’s graph:
 
-1. If the necessary OpDef has been created, it returns immediate.Operation object encapsulating this OpDef
+1. If the necessary OpDef has been created, it returns imperative.Operation object encapsulating this OpDef
 
-2. Otherwise is runs original tensorflow function to create the necessary piece of graph (tf.nn.conv2d(<arguments>) and encapsulates the newly created piece of graph into immediate.Operation object, saving result in the cache
+2. Otherwise is runs original tensorflow function to create the necessary piece of graph (tf.nn.conv2d(<arguments>) and encapsulates the newly created piece of graph into imperative.Operation object, saving result in the cache
 
 ### OpFactory cache
 

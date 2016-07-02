@@ -1,12 +1,12 @@
-"""This module contains implementations of immediate replacement of various
+"""This module contains implementations of imperative replacement of various
 TensorFlow functions. They mainly are used by module_rewriter while wrapping
-tensorflow namespace. The central method of immediate wrapping is "apply_op"
+tensorflow namespace. The central method of imperative wrapping is "apply_op"
 method of OpDefLibraryWrapper, which provides a version of "apply_op" that
 works with itensors instead of tensors.
 
 Op: helper class that wraps env and piece of Graph into a callable Python object
 OpDefLibraryWrapper: substitution for op_def_library in gen_.*_op files, it
-    provides immediate-compatible version of apply_op
+    provides imperative-compatible version of apply_op
 ConstantOpWrapper: replacement of constant_op.constant
 ConvertToTensorWrapper: replacement of ops.convert_to_tensor
 ConstantValueWrapper: replacement of tensor_util.constant_value
@@ -36,7 +36,7 @@ class Op(object):
     """Initialize Op.
 
     Args:
-      env: immediate.Env object that is used to run this operation
+      env: imperative.Env object that is used to run this operation
       input_holders: dictionary of input_arg name to Placeholders or lists of
           Placeholders where corresponding input will be fed. Lists of
           holders are used for list input arguments like for Concat. This
@@ -84,7 +84,7 @@ class OpDefLibraryWrapper(object):
     """Initialize OpDefLibraryWrapper.
 
     Args:
-      env: immediate.Env object
+      env: imperative.Env object
       original_op_def_library: ops.OpDefLibrary object
     """
     self.env = env
@@ -128,7 +128,7 @@ class OpDefLibraryWrapper(object):
 
     # Couldn't find op in graph cache, create it and add to cache
     if self.env.PRINT_CACHE_MISSES:
-      print("Immediate cache miss for %s" %(str(key)))
+      print("Imperative cache miss for %s" %(str(key)))
 
 
     # Graph construction overview:
@@ -196,7 +196,7 @@ class OpDefLibraryWrapper(object):
                                                        op_name+".handle")
       # operation output like with.control_dependencies
       elif isinstance(output, ops_lib.Operation):
-        assert False, "Immediate mode only supports ops that produce tensors"
+        assert False, "Imperative mode only supports ops that produce tensors"
 
       else:  # list of Tensors, such as for tf.split
         assert is_list_or_tuple(output)
@@ -233,7 +233,7 @@ class ConstantOpWrapper(object):
 
 
 class ConvertToTensorWrapper(object):
-  """A callable object that mirrors tf.convert_to_tensor in Immediate
+  """A callable object that mirrors tf.convert_to_tensor in Imperative
   environment."""
 
 #  def __init__(self, namespace, env, symbol_name):
@@ -248,7 +248,7 @@ class ConvertToTensorWrapper(object):
 
 
 class ConstantValueWrapper(object):
-  """A callable object that mirrors tensor_util.constant_value in Immediate
+  """A callable object that mirrors tensor_util.constant_value in Imperative
   environment."""
 
   def __init__(self, env, old_symbol):
@@ -333,7 +333,7 @@ def create_opdef_key(op_def, keywords, op_device):
   return hashable_key
 
 def is_itensor_or_itensors(value):
-  """Returns true if argument is immediate Tensor or list/tuple of Tensors."""
+  """Returns true if argument is imperative Tensor or list/tuple of Tensors."""
 
   if isinstance(value, ITensor):
     return True

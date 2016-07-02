@@ -1,4 +1,4 @@
-"""Functional tests for immediate Graph caching."""
+"""Functional tests for imperative Graph caching."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -6,19 +6,19 @@ from __future__ import print_function
 
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
 
 import tensorflow as tf
 
-class EnvCacheTest(test_util.ImmediateTestCase):
+class EnvCacheTest(test_util.ImperativeTestCase):
 
   def testSum1CacheCpu(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
     with env.g.device("cpu:0"):
@@ -42,7 +42,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     if not self.haveGpu0():
       return True
 
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     with env.g.device("cpu:0"):
       val1 = env.numpy_to_itensor([1, 2, 3])
       val2 = env.numpy_to_itensor([4, 5, 6])
@@ -59,7 +59,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
       self.assertTrue(is_graph_changed(env))
       
   def testAddCacheCpu(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     env.disable_gc()
     val1 = env.numpy_to_itensor(1)
     val2 = env.numpy_to_itensor(2)
@@ -76,7 +76,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     if not self.haveGpu0():
       return True
 
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
 
@@ -105,7 +105,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     if not self.haveGpu0():
       return True
 
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
 
@@ -153,7 +153,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     self.assertEqual(gpu_plus_gpu2, 4)
 
   def testConcatCache(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
 
@@ -189,7 +189,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     self.assertFalse(is_graph_changed(env))
 
   def testSplitCache(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     env.disable_gc()
 
     env.tf.split(1, 3, env.tf.ones((1, 3)))
@@ -198,7 +198,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
     self.assertFalse(is_graph_changed(env))
 
   def testNumpyToTensorCache(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
 
@@ -225,7 +225,7 @@ class EnvCacheTest(test_util.ImmediateTestCase):
       self.assertFalse(is_graph_changed(env))
 
   def testTensorToNumpyCache(self):
-    env = immediate.Env(tf)
+    env = imperative.Env(tf)
     is_graph_changed(env)
     env.disable_gc()
 

@@ -34,13 +34,13 @@ exp = math.exp
 log = math.log
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
-env = immediate.Env({"tf": tf, "gen_nn_ops": gen_nn_ops})
+env = imperative.Env({"tf": tf, "gen_nn_ops": gen_nn_ops})
 tf = env.tf
 gen_nn_ops = env.gen_nn_ops
 env.g.graph_def_versions.producer = 8

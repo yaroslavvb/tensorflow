@@ -1,4 +1,4 @@
-"""Tests for immediate.Tensor."""
+"""Tests for imperative.Tensor."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -8,13 +8,13 @@ import numpy as np
 import tensorflow as tf
 
 try:
-  import tensorflow.contrib.immediate as immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
-  from tensorflow.contrib.immediate.python.immediate import itensor as itensor_lib
+  import tensorflow.contrib.imperative as imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
+  from tensorflow.contrib.imperative.python.imperative import itensor as itensor_lib
 except:
-  import immediate
-  from immediate import test_util
-  from immediate import itensor as itensor_lib
+  import imperative
+  from imperative import test_util
+  from imperative import itensor as itensor_lib
 
 class ITensorTest(test_util.TensorFlowTestCase):
 

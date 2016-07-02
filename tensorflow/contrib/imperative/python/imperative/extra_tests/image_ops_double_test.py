@@ -37,14 +37,14 @@ from tensorflow.python.platform import googletest
 
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
 import tensorflow as tf
-env = immediate.Env({"tf": tf, "io_ops": io_ops,
+env = imperative.Env({"tf": tf, "io_ops": io_ops,
                      "image_ops": image_ops, "array_ops": array_ops})
 tf = env.tf
 io_ops = env.io_ops
@@ -343,7 +343,7 @@ class RandomFlipTest(test_util.TensorFlowTestCase):
 
   # NOTE(yaroslavvb):
   # This test expects each evaluation of a "random" tensor to produce different
-  # result. However in immediate execution, a tensor is fixed in value
+  # result. However in imperative mode, a tensor is fixed in value
   # so the eval gives same result each time
   def disabled_testRandomLeftRight(self):
     x_np = np.array([0, 1], dtype=np.uint8).reshape([1, 2, 1])
@@ -363,7 +363,7 @@ class RandomFlipTest(test_util.TensorFlowTestCase):
 
   # NOTE(yaroslavvb):
   # This test expects each evaluation of a "random" tensor to produce different
-  # result. However in immediate execution, a tensor is fixed in value
+  # result. However in imperative mode, a tensor is fixed in value
   # so the eval gives same result each time
   def disabled_testRandomUpDown(self):
     x_np = np.array([0, 1], dtype=np.uint8).reshape([2, 1, 1])
@@ -557,7 +557,7 @@ class CentralCropTest(test_util.TensorFlowTestCase):
       self.assertAllEqual(y_tf, x_np)
       self.assertEqual(y.op.name, x.op.name)
 
-  # NOTE(yaroslavvb): temporarily disabled because immediate tensors
+  # NOTE(yaroslavvb): temporarily disabled because imperative tensors
   # don't support slicign, while central_crop does this
   # math_ops.div(img_shape[0], fraction_offset)
   def temp_testCropping(self):
@@ -1677,7 +1677,7 @@ class RandomFlipTest2(test_util.TensorFlowTestCase):
 
   # NOTE(yaroslavvb):
   # This test expects each evaluation of a "random" tensor to produce different
-  # result. However in immediate execution, a tensor is fixed in value
+  # result. However in imperative mode, a tensor is fixed in value
   # so the eval gives same result each time
   def disabled_testRandomLeftRight(self):
     x_np = np.array([0, 1], dtype=np.uint8).reshape([1, 2, 1])
@@ -1697,7 +1697,7 @@ class RandomFlipTest2(test_util.TensorFlowTestCase):
 
   # NOTE(yaroslavvb):
   # This test expects each evaluation of a "random" tensor to produce different
-  # result. However in immediate execution, a tensor is fixed in value
+  # result. However in imperative mode, a tensor is fixed in value
   # so the eval gives same result each time
   def disabled_testRandomUpDown(self):
     x_np = np.array([0, 1], dtype=np.uint8).reshape([2, 1, 1])
@@ -1891,7 +1891,7 @@ class CentralCropTest2(test_util.TensorFlowTestCase):
       self.assertAllEqual(y_tf, x_np)
       self.assertEqual(y.op.name, x.op.name)
 
-  # NOTE(yaroslavvb): temporarily disabled because immediate tensors
+  # NOTE(yaroslavvb): temporarily disabled because imperative tensors
   # don't support slicign, while central_crop does this
   # math_ops.div(img_shape[0], fraction_offset)
   def temp_testCropping(self):

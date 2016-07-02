@@ -20,15 +20,15 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-# tf-immediate replacements
+# tf-imperative replacements
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
-env = immediate.Env(tf)
+env = imperative.Env(tf)
 tf = env.tf
 
 

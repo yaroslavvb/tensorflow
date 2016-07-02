@@ -13,8 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
-# NOTE(yaroslavvb): port of nn_test for immediate execution. The following
-# tests are incompatible with immediate execution and are commented out
+# NOTE(yaroslavvb): port of nn_test for imperative mode. The following
+# tests are incompatible with imperative mode and are commented out
 # 1. Gradient tests (tf.test.compute_gradient_error, tf.gradients)
 # 2. Tests that rely on static shape inference (get_shape)
 # Note, replace all tf.test.TestCase with test_util.TensorflowTestCase
@@ -45,13 +45,13 @@ log = math.log
 
 
 try:
-  from tensorflow.contrib import immediate
-  from tensorflow.contrib.immediate.python.immediate import test_util
+  from tensorflow.contrib import imperative
+  from tensorflow.contrib.imperative.python.imperative import test_util
 except:
-  import immediate
-  from immediate import test_util
+  import imperative
+  from imperative import test_util
 
-env = immediate.Env({"tf": tf, "gen_nn_ops": gen_nn_ops})
+env = imperative.Env({"tf": tf, "gen_nn_ops": gen_nn_ops})
 tf = env.tf
 gen_nn_ops = env.gen_nn_ops
 
@@ -192,7 +192,7 @@ class ZeroFractionTest(tf.test.TestCase):
     eps = 1e-8
     self.assertAllClose(y_tf_np, y_np, eps)
 
-  # TODO(yaroslavvb): on GPU in immediate mode, tf.mean([]) returns 0 instead of
+  # TODO(yaroslavvb): on GPU in imperative mode, tf.mean([]) returns 0 instead of
   # NaN, which makes this test fail. Figure out if that's desired behavior
   # def testZeroFractionEmpty(self):
   #   with self.test_session():

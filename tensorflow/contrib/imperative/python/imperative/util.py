@@ -1,4 +1,4 @@
-"""Utilities used by internal implementation of immediate execution."""
+"""Utilities used by internal implementation of imperative mode."""
 
 from __future__ import absolute_import
 from __future__ import division

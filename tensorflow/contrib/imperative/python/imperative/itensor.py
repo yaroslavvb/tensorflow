@@ -1,4 +1,4 @@
-"""Implementation of ITensor for the immediate API."""
+"""Implementation of ITensor for the imperative API."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -19,7 +19,7 @@ class ITensor(object):
     """Initialize ITensor.
 
     Args:
-      env: immediate.Env object
+      env: imperative.Env object
       handle: session_ops.TensorHandle object
     """
     self.env = env
@@ -54,7 +54,7 @@ class ITensor(object):
   def op(self):
     """Method for compatibility with Tensor."""
     node_def = graph_pb2.NodeDef()
-    node_def.name = "immediate-dummy-node"
+    node_def.name = "imperative-dummy-node"
     node_def.input.extend(["dummy1", "dummy2", "dummy3"])
 
     dummy_input1 = array_ops.placeholder(self.dtype)
@@ -85,7 +85,7 @@ class ITensor(object):
     shape_tensor = self.env.tf.shape(self)
     return tensor_shape.TensorShape(tuple(shape_tensor.as_numpy()))
 
-  # Immediate tensors don't have static shape, but keep this method
+  # Imperative tensors don't have static shape, but keep this method
   # for compatibility with array_ops.py
   def set_shape(self, _unused_shape):
     """Method for compatiblity with Tensor."""
