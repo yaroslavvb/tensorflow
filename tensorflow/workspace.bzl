@@ -27,7 +27,7 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   native.git_repository(
     name = "gemmlowp",
     remote = "https://github.com/google/gemmlowp.git",
-    commit = "96d3acab46fbb03855ca22c2ee2bb9831ac8c83c",
+    commit = "8b20dd2ce142115857220bd6a35e8a081b3e0829",
   )
 
   native.new_http_archive(
@@ -106,8 +106,8 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   )
 
   native.bind(
-      name = "python_headers",
-      actual = tf_repo_name + "//util/python:python_headers",
+    name = "python_headers",
+    actual = tf_repo_name + "//util/python:python_headers",
   )
 
   # grpc expects //external:protobuf_clib and //external:protobuf_compiler
@@ -155,9 +155,9 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   )
 
   native.git_repository(
-      name = "boringssl_git",
-      remote = "https://github.com/google/boringssl.git",
-      commit = "bbcaa15b0647816b9a1a9b9e0d209cd6712f0105",  # 2016-07-11
+    name = "boringssl_git",
+    remote = "https://github.com/google/boringssl.git",
+    commit = "bbcaa15b0647816b9a1a9b9e0d209cd6712f0105",  # 2016-07-11
   )
 
   native.new_git_repository(
