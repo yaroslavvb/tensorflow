@@ -73,11 +73,17 @@ void LogMessage::GenerateLogMessage() {
 
 #else
 
+inline static double CurrentRealTimeMillis() {
+    struct timespec tm;
+    clock_gettime(CLOCK_MONOTONIC, &tm);
+    return tm.tv_sec * 1000LL + double(tm.tv_nsec) / 1000000LL;
+}
+
 void LogMessage::GenerateLogMessage() {
   // TODO(jeff,sanjay): For open source version, replace this with something
   // that logs through the env or something and fill in appropriate time info.
-  fprintf(stderr, "%c %s:%d] %s\n", "IWEF"[severity_], fname_, line_,
-          str().c_str());
+
+  fprintf(stderr, "%c %.6f file %s:%d] %s\n", "IWEF"[severity_], CurrentRealTimeMillis(), fname_, line_, str().c_str());
 }
 #endif
 

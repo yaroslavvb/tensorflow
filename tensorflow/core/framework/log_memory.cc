@@ -26,6 +26,12 @@ bool LogMemory::IsEnabled() { return VLOG_IS_ON(1); }
 
 namespace {
 
+inline static int64 CurrentThreadTimeNanos() {
+  struct timespec tm;
+  clock_gettime(CLOCK_MONOTONIC, &tm);
+  return tm.tv_sec * 1000000000LL + tm.tv_nsec;
+}
+
 // Write the proto entry to LOG(INFO).
 template <typename T>
 void OutputToLog(const T& proto) {
@@ -33,7 +39,7 @@ void OutputToLog(const T& proto) {
   const size_t index = type_name.find_last_of(".");
   if (index != string::npos) type_name = type_name.substr(index + 1);
   LOG(INFO) << LogMemory::kLogMemoryLabel << " " << type_name << " { "
-            << ProtoShortDebugString(proto) << " }";
+  << ProtoShortDebugString(proto) << " } timestamp " << CurrentThreadTimeNanos();
 }
 
 }  // namespace
