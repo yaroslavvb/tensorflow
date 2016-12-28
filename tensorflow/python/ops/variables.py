@@ -228,6 +228,9 @@ class Variable(object):
   def __str__(self):
     return str(self._snapshot)
 
+  def __repr__(self):
+    return repr(self._snapshot)
+
   def _init_from_args(self,
                       initial_value=None,
                       trainable=True,
