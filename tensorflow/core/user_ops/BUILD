@@ -7,6 +7,6 @@ tf_custom_op_library(
 
 
 tf_custom_op_library(
-    name = "stack_ops.so",
-    srcs = ["stack_ops.cc"],
+    name = "bytes_in_use.so",
+    srcs = ["bytes_in_use.cc"],
 )

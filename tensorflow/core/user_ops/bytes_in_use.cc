@@ -59,7 +59,7 @@ class BytesInUseOp : public OpKernel {
     AllocatorStats stats;
     allocator->GetStats(&stats);
     output(0) = stats.bytes_in_use;
-    printf("Bytes in use %lld\n", stats.bytes_in_use);
+    printf("Bytes in use %lld\n\n", stats.bytes_in_use);
     output(0) = stats.bytes_in_use;
   }
 };
