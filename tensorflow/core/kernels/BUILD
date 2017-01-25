@@ -265,6 +265,15 @@ tf_kernel_library(
     ],
 )
 
+tf_kernel_library(
+    name = "bytes_in_use_op",
+    srcs = ["bytes_in_use_op.cc"],
+    deps = [
+        "//tensorflow/core:framework",
+        "//tensorflow/core:lib",
+    ],
+)
+
 cc_library(
     name = "queue_base",
     srcs = ["queue_base.cc"],

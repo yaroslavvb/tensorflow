@@ -2234,4 +2234,15 @@ file_parallelism: How many sstables are opened and concurrently iterated over.
 batch_size: The batch size.
 )doc");
 
+
+REGISTER_OP("BytesInUse")
+    .Input("dummy_input: int32")   // TODO: need input for alloc_attrs
+    .Output("bytes_in_use: int32")
+    .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+      c->set_output(0, c->input(0));
+      return Status::OK();
+    })
+    .Doc(R"doc(Returns bytes in use for the device holding input (?)
+    )doc");
+
 }  // namespace tensorflow
