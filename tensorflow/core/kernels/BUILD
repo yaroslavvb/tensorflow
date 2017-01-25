@@ -1188,6 +1188,7 @@ cc_library(
     name = "data_flow",
     deps = [
         ":barrier_ops",
+        ":bytes_in_use_op",
         ":conditional_accumulator_base_op",
         ":conditional_accumulator_op",
         ":dynamic_partition_op",

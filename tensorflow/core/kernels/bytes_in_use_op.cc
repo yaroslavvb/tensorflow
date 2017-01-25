@@ -54,6 +54,4 @@ class BytesInUseOp : public OpKernel {
 };
 
 REGISTER_KERNEL_BUILDER(Name("BytesInUse").Device(DEVICE_CPU), BytesInUseOp);
-#if GOOGLE_CUDA
 REGISTER_KERNEL_BUILDER(Name("BytesInUse").Device(DEVICE_GPU), BytesInUseOp);
-#endif
