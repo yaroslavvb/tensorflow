@@ -36,7 +36,7 @@ class BytesInUseOpTest(test.TestCase):
     with self.test_session(use_gpu=True) as sess:
       with ops.device('/gpu:0'):
         n = 42*10**6,
-        dummy = tf.ones(())
+        dummy = array_ops.ones((), dtype=dtypes.int32)
         bytes_in_use = data_flow_ops.bytes_in_use(dummy)
         bytes1 = sess.run(bytes_in_use)
         var = tf.Variable(tf.random_uniform((n,), maxval=10, dtype=tf.int32))
