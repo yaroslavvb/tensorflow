@@ -269,6 +269,7 @@ tf_kernel_library(
     name = "bytes_in_use_op",
     srcs = ["bytes_in_use_op.cc"],
     deps = [
+        "//tensorflow/core:core_cpu_internal",
         "//tensorflow/core:framework",
         "//tensorflow/core:lib",
     ],

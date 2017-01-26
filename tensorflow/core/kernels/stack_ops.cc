@@ -212,14 +212,16 @@ class StackPushOp : public AsyncOpKernel {
     // allocator says more than kOccupancy of the memory is in use.
     static constexpr int kCopyThreshold = 2048;
     static constexpr double kOccupancy = 0.7;
+    DeviceContext* device_ctxt = ctx->op_device_context();
+    auto device = static_cast<tensorflow::Device*>(ctx->device());
+    Allocator* allocator = device->GetAllocator(alloc_attrs);
+    AllocatorStats stats;
+    allocator->GetStats(&stats);
+    printf("stack_ops.cc: Bytes in use %lld\n", stats.bytes_in_use);
     if (swap_memory_ && !alloc_attrs.on_host() &&
         std::is_same<Device, GPUDevice>::value &&
         tensor.TotalBytes() > kCopyThreshold && stack->IsUsefulToSwap(tensor)) {
-      DeviceContext* device_ctxt = ctx->op_device_context();
-      auto device = static_cast<tensorflow::Device*>(ctx->device());
-      Allocator* allocator = device->GetAllocator(alloc_attrs);
-      AllocatorStats stats;
-      allocator->GetStats(&stats);
+      printf("stack_ops.cc: Bytes in use %lld", stats.bytes_in_use);
       if (stats.bytes_in_use > (stats.bytes_limit * kOccupancy)) {
         // Asynchronously copy the tensor from GPU to CPU memory.
         // TODO(yuanbyu): Swap the oldest tensor first.

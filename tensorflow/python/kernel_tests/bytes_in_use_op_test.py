@@ -51,7 +51,7 @@ class BytesInUseOpTest(test.TestCase):
           #          bytes_in_use = data_flow_ops.bytes_in_use(var)
           bytes_in_use = data_flow_ops.bytes_in_use(initializer)
           bytes2 = sess.run(bytes_in_use)
-          print("Bytes1 %d, bytes2 %d"%(bytes1, bytes2))
+          print("Bytes1 %s, bytes2 %s"%(bytes1, bytes2))
           #self.assertEqual(bytes2 - bytes1, n*4)
 
 if __name__ == "__main__":
