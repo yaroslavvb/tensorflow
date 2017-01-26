@@ -21,6 +21,7 @@ class ZeroOutOp : public OpKernel {
 
   void Compute(OpKernelContext* context) override {
     // Grab the input tensor
+    printf("Computing!\n");
     const Tensor& input_tensor = context->input(0);
     auto input = input_tensor.flat<int32>();
 
@@ -42,3 +43,4 @@ class ZeroOutOp : public OpKernel {
 };
 
 REGISTER_KERNEL_BUILDER(Name("ZeroOut").Device(DEVICE_CPU), ZeroOutOp);
+REGISTER_KERNEL_BUILDER(Name("ZeroOut").Device(DEVICE_GPU), ZeroOutOp);
