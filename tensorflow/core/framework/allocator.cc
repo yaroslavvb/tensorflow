@@ -48,7 +48,7 @@ constexpr size_t Allocator::kAllocatorAlignment;
 Allocator::~Allocator() {}
 
 // If true, cpu allocator collects more stats.
-static bool cpu_allocator_collect_stats = false;
+static bool cpu_allocator_collect_stats = true;
 // If true, cpu allocator collects full stats.
 static bool cpu_allocator_collect_full_stats = false;
 
